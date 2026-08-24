@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0a0a0f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' fill='%230a0a0f'/%3E%3Ctext x='96' y='140' font-size='120' text-anchor='middle' fill='%23ffac02'%3E⚡%3C/text%3E%3C/svg%3E">
+<title>Hermes Dashboard</title>
+<style>
+:root{--bg:#0a0a0f;--surface:rgba(20,20,30,.55);--surface2:rgba(30,30,45,.6);--surface-hover:rgba(35,35,55,.7);--border:rgba(255,255,255,.06);--border-hover:rgba(255,255,255,.12);--accent:#ffac02;--accent-dim:rgba(255,172,2,.2);--green:#22c55e;--green-dim:rgba(34,197,94,.2);--red:#ef4444;--red-dim:rgba(239,68,68,.2);--blue:#3b82f6;--yellow:#eab308;--text:#e2e2ea;--text-dim:#8888a0;--text-muted:#55556a;--radius:12px;--radius-sm:8px;--font:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;--mono:'SF Mono','Fira Code','Cascadia Code',monospace}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:var(--font);background:var(--bg);color:var(--text);padding:clamp(8px,2vw,16px);min-height:100dvh;padding-bottom:clamp(64px,15vw,80px);background-image:radial-gradient(ellipse 60% 50% at 20% 20%,rgba(255,172,2,.03) 0%,transparent 60%),radial-gradient(ellipse 50% 40% at 80% 30%,rgba(99,102,241,.04) 0%,transparent 60%)}
+/* ── Header ── */
+.header{display:flex;align-items:center;gap:clamp(6px,2vw,12px);margin-bottom:clamp(10px,2vw,20px);flex-wrap:wrap}
+.header h1{font-size:clamp(16px,2.5vw,22px);font-weight:700;color:var(--accent);display:flex;align-items:center;gap:4px}
+.header .subtitle{font-size:clamp(10px,1.5vw,12px);color:var(--text-dim)}
+.header .status-badge{margin-left:auto;display:flex;align-items:center;gap:4px;font-size:clamp(10px,1.2vw,11px);padding:3px 10px;border-radius:20px;background:var(--surface2);white-space:nowrap}
+.dot{width:7px;height:7px;border-radius:50%;display:inline-block;flex-shrink:0}
+.dot.green{background:var(--green)}.dot.red{background:var(--red)}.dot.yellow{background:var(--yellow)}.dot.blue{background:var(--blue)}
+/* ── Summary Bar ── */
+.summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(80px,1fr));gap:6px;margin-bottom:14px}
+@media(max-width:480px){.summary{grid-template-columns:repeat(auto-fit,minmax(70px,1fr));gap:4px}}
+.summary-item{background:var(--surface);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid var(--border);border-radius:var(--radius-sm);padding:clamp(8px,1.2vw,12px) clamp(6px,1vw,10px);text-align:center;transition:all .2s;cursor:pointer;overflow:hidden}
+.summary-item:active{transform:scale(.97)}
+.summary-item .s-label{font-size:9px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.summary-item .s-value{font-size:clamp(14px,2.5vw,20px);font-weight:700;font-variant-numeric:tabular-nums;line-height:1.2}
+.summary-item .s-sub{font-size:9px;color:var(--text-dim);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.summary-item.highlight{border-color:var(--accent-dim)}
+/* ── Grid ── */
+.grid{display:grid;grid-template-columns:1fr;gap:8px}
+@media(min-width:700px){.grid{grid-template-columns:1fr 1fr;gap:10px}}
+@media(min-width:1100px){.grid{grid-template-columns:1fr 1fr 1fr;gap:12px}.grid .full{grid-column:1/-1}}
+/* ── Cards ── */
+.card{background:var(--surface);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid var(--border);border-radius:var(--radius);padding:clamp(12px,2vw,18px);position:relative;transition:all .3s;animation:fadeIn .4s ease}
+.card:hover{border-color:var(--border-hover)}
+.card-title{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.7px;color:var(--text-muted);margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;gap:6px;min-height:20px}
+.card-title .count{font-size:15px;color:var(--text);font-weight:700;letter-spacing:0}
+.card.collapsed .card-content{display:none}
+.card-toggle{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:14px;padding:2px 6px;border-radius:4px;transition:all .15s;line-height:1;flex-shrink:0}
+.card-toggle:hover{background:var(--surface2);color:var(--text)}
+/* ── Empty ── */
+.empty{color:var(--text-muted);font-size:12px;padding:12px 0;text-align:center}
+/* ── Gateway ── */
+.gateway-row{display:flex;gap:5px;flex-wrap:wrap}
+.gateway-chip{display:inline-flex;align-items:center;gap:3px;padding:4px 8px;background:var(--surface2);backdrop-filter:blur(4px);border-radius:5px;font-size:clamp(10px,1.2vw,12px);color:var(--text-dim);max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.gateway-chip .num{color:var(--text);font-weight:600;font-variant-numeric:tabular-nums}
+/* ── Processes ── */
+.proc-item{padding:5px 0;border-bottom:1px solid #ffffff08;font-size:clamp(11px,1.2vw,12px);display:flex;align-items:center;gap:5px}
+.proc-item:last-child{border:none}
+.proc-pid{font-family:var(--mono);font-size:9px;color:var(--text-muted);min-width:32px;flex-shrink:0}
+.proc-cmd{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text-dim);font-size:clamp(10px,1.1vw,11px);min-width:0}
+.proc-time{font-size:9px;color:var(--text-muted);white-space:nowrap;flex-shrink:0}
+.proc-alive{width:5px;height:5px;border-radius:50%;background:var(--green);flex-shrink:0}
+/* ── Tasks ── */
+.task-item{padding:6px 0;border-bottom:1px solid #ffffff08;font-size:clamp(11px,1.2vw,12px)}
+.task-item:last-child{border:none}
+.task-top{display:flex;align-items:flex-start;gap:5px}
+.task-top .title{flex:1;font-weight:500;line-height:1.3;word-break:break-word;min-width:0}
+.task-status{font-size:9px;padding:2px 5px;border-radius:3px;white-space:nowrap;font-weight:600;flex-shrink:0}
+.task-status.in_progress{background:#22c55e20;color:var(--green)}
+.task-status.pending{background:#eab30820;color:var(--yellow)}
+.task-status.blocked{background:#ef444420;color:var(--red)}
+.task-meta{display:flex;gap:8px;margin-top:2px;font-size:9px;color:var(--text-muted);flex-wrap:wrap}
+.task-subtasks{margin-top:3px;padding-left:12px;font-size:10px;color:var(--text-dim)}
+.task-subtasks li{padding:1px 0;list-style:none}
+/* ── Sessions ── */
+.session-item{padding:5px 0;border-bottom:1px solid #ffffff08;font-size:clamp(11px,1.2vw,12px)}
+.session-item:last-child{border:none}
+.session-title{font-weight:500;font-size:clamp(12px,1.3vw,13px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.session-meta{display:flex;gap:6px;font-size:9px;color:var(--text-muted);margin-top:2px;flex-wrap:wrap;row-gap:2px}
+.session-meta span{flex-shrink:0}
+/* ── Cron Jobs ── */
+.cron-tabs{display:flex;gap:6px;margin-bottom:10px}
+.cron-tab{padding:4px 12px;border-radius:12px;border:1px solid var(--border);background:transparent;color:var(--text-muted);font-size:11px;cursor:pointer;transition:all .2s;font-family:var(--font)}
+.cron-tab:hover{background:var(--surface);color:var(--text-dim)}
+.cron-tab.active{background:var(--accent-dim);border-color:var(--accent);color:var(--accent)}
+.cron-jobs{display:flex;flex-direction:column;gap:4px}
+.cron-job{display:flex;align-items:center;gap:8px;padding:6px 8px;background:var(--surface2);border-radius:6px;border:1px solid transparent;transition:all .2s}
+.cron-job:hover{border-color:var(--border-hover)}
+.cron-job .icon{font-size:14px;width:18px;text-align:center;flex-shrink:0}
+.cron-job .name{font-size:11px;color:var(--text);font-weight:500;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cron-job .time{font-size:10px;color:var(--text-muted);font-family:var(--mono);white-space:nowrap}
+.cron-job .status{font-size:10px;color:var(--text-muted);white-space:nowrap}
+.cron-job .status.ok{color:var(--green)}
+.cron-job .status.err{color:var(--red)}
+.cron-job .last-run{font-size:9px;color:var(--text-muted);white-space:nowrap}
+.cron-section-title{font-size:12px;font-weight:600;color:var(--text-dim);margin:8px 0 6px;display:flex;align-items:center;gap:6px}
+.cron-section-title .count{font-size:10px;color:var(--text-muted);font-weight:400}
+.cron-empty{padding:12px;text-align:center;font-size:11px;color:var(--text-muted)}
+/* ── System ── */
+.sys-row{display:flex;gap:clamp(6px,2vw,16px);flex-wrap:wrap}
+.sys-stat{padding:5px 8px;background:var(--surface2);border-radius:5px;min-width:60px;flex:1}
+.sys-stat .label{font-size:8px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px}
+.sys-stat .value{font-size:clamp(13px,2vw,18px);font-weight:600;font-variant-numeric:tabular-nums;margin-top:1px}
+/* ── Agent Tree ── */
+.agent-tree{font-size:clamp(11px,1.2vw,12px)}
+.agent-root{margin-bottom:6px;border-left:2px solid var(--accent-dim);padding-left:6px}
+.agent-root-header{display:flex;align-items:center;gap:4px;cursor:pointer;padding:3px 0;user-select:none;flex-wrap:nowrap}
+@media(max-width:480px){.agent-root-header{flex-wrap:wrap;gap:2px}}
+.agent-root-header:hover{background:#ffffff08;border-radius:5px;padding-left:3px}
+.agent-root-header .toggle{width:12px;text-align:center;color:var(--text-muted);font-size:8px;flex-shrink:0;transition:transform .15s}
+.agent-root-header .toggle.collapsed{transform:rotate(-90deg)}
+.agent-source-badge{font-size:8px;padding:1px 4px;border-radius:3px;font-weight:600;text-transform:uppercase;flex-shrink:0}
+.agent-source-badge.slack{background:#4a154b40;color:#e01e5a}
+.agent-source-badge.telegram{background:#0088cc20;color:#0088cc}
+.agent-source-badge.cron{background:#eab30820;color:var(--yellow)}
+.agent-source-badge.cli{background:#3b82f620;color:var(--blue)}
+.agent-model{font-size:9px;color:var(--text-muted);display:none;overflow:hidden;text-overflow:ellipsis;max-width:100px}
+@media(min-width:700px){.agent-model{display:inline}}
+.agent-stats{font-size:9px;color:var(--text-dim);display:flex;gap:4px;flex-shrink:0;margin-left:auto}
+.agent-stats span{white-space:nowrap}
+.agent-root-header > span:not(.toggle):not(.agent-source-badge):not(.agent-model):not(.agent-stats){flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:clamp(11px,1.2vw,13px)}
+.agent-children{padding-left:10px}
+.agent-child{padding:2px 0;border-left:1px solid #ffffff12;padding-left:6px;margin:1px 0}
+.agent-child:last-child{border-left:1px solid transparent}
+.agent-child > div:first-child{flex-wrap:wrap;row-gap:2px}
+.agent-task{margin-top:2px;padding:2px 0 2px 8px;border-left:2px solid var(--surface2);font-size:10px}
+.agent-task-header{display:flex;align-items:center;gap:3px;flex-wrap:wrap;row-gap:2px}
+.agent-subtask{padding-left:14px;font-size:9px;color:var(--text-dim);margin:1px 0}
+.agent-subtask::before{content:'└─ ';color:var(--text-muted)}
+.agent-details{display:none;padding:5px 8px;margin:2px 0;background:var(--surface2);border-radius:5px;font-size:10px}
+.agent-details.show{display:block}
+.agent-details .row{display:flex;gap:8px;flex-wrap:wrap;margin:1px 0}
+.agent-details .row span{color:var(--text-dim)}
+.agent-details .row .val{color:var(--text);font-weight:500}
+/* ── Workers ── */
+.worker-item{display:flex;align-items:center;gap:5px;padding:3px 0;border-bottom:1px solid #ffffff08;font-size:10px}
+.worker-item:last-child{border:none}
+.worker-pid{font-family:var(--mono);font-size:8px;color:var(--text-muted);min-width:28px;flex-shrink:0}
+.worker-cmd{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text-dim);font-size:9px;min-width:0}
+.worker-rss{font-size:8px;color:var(--text-muted);white-space:nowrap;flex-shrink:0}
+/* ── Toasts ── */
+#toastContainer{position:fixed;top:8px;right:8px;z-index:9999;display:flex;flex-direction:column;gap:4px;max-width:clamp(280px,80vw,320px);width:auto;pointer-events:none}
+.toast{padding:7px 10px;border-radius:8px;font-size:11px;line-height:1.3;color:var(--text);box-shadow:0 4px 16px rgba(0,0,0,.5);animation:toastIn .3s ease,toastOut .3s ease 4.7s forwards;display:flex;align-items:center;gap:5px;backdrop-filter:blur(8px);pointer-events:auto}
+.toast.working{background:rgba(34,197,94,.18);border:1px solid rgba(34,197,94,.35)}
+.toast.idle{background:rgba(136,136,160,.12);border:1px solid rgba(136,136,160,.25)}
+.toast.started{background:rgba(59,130,246,.15);border:1px solid rgba(59,130,246,.3)}
+.toast.ended{background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.25)}
+.toast .toast-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.toast.working .toast-dot{background:var(--green);box-shadow:0 0 6px var(--green);animation:pulse 1s infinite}
+.toast.idle .toast-dot{background:var(--text-muted)}
+.toast.started .toast-dot{background:var(--blue)}
+.toast.ended .toast-dot{background:var(--red)}
+@keyframes toastIn{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:translateX(0)}}
+@keyframes toastOut{from{opacity:1;transform:translateX(40px)}to{opacity:0;transform:translateX(0)}}
+/* ── Socat ── */
+.status-dot{font-size:clamp(.7rem,.85rem,.9rem);transition:color .3s;display:inline-flex;align-items:center;gap:2px}
+.socat-up{color:#22c55e}.socat-down{color:#ef4444;animation:pulse 1.5s infinite}
+/* ── Events ── */
+.event-item{display:flex;align-items:flex-start;gap:5px;padding:3px 0;border-bottom:1px solid #ffffff06;font-size:10px;line-height:1.2}
+.event-item:last-child{border:none}
+.event-icon{font-size:11px;flex-shrink:0;margin-top:1px}
+.event-body{flex:1;min-width:0}
+.event-title{font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.event-detail{font-size:9px;color:var(--text-dim);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.event-time{font-size:8px;color:var(--text-muted);white-space:nowrap;flex-shrink:0;margin-left:auto}
+/* ── Tool calls ── */
+.tool-call-item{display:flex;align-items:center;gap:3px;padding:2px 0;font-size:9px;color:var(--text-dim);overflow:hidden}
+.tool-call-item .tool-name{color:var(--blue);font-weight:500;flex-shrink:0}
+.tool-call-item span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* ── Bottom nav (mobile) ── */
+@media(max-width:699px){
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--surface);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-top:1px solid var(--border);display:flex;overflow-x:auto;z-index:100;padding:6px env(safe-area-inset-bottom,6px);-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.bottom-nav::-webkit-scrollbar{display:none}
+}
+.bottom-nav button{flex:0 0 auto;padding:5px 10px;background:none;border:none;color:var(--text-muted);font-size:9px;cursor:pointer;text-align:center;border-radius:6px;transition:all .15s;white-space:nowrap;touch-action:manipulation}
+.bottom-nav button:active,.bottom-nav button.active{color:var(--accent);background:#ffffff08}
+.bottom-nav button .nav-icon{display:block;font-size:14px;margin-bottom:1px}
+}
+/* ── Animations ── */
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.pulse{animation:pulse 2s infinite}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.card{animation:fadeIn .4s ease}
+@keyframes slideUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+/* ── Skeleton loading ── */
+.skeleton{background:linear-gradient(90deg,var(--surface) 25%,var(--surface2) 50%,var(--surface) 75%);background-size:200% 100%;animation:skeletonShimmer 1.5s ease infinite;border-radius:4px}
+@keyframes skeletonShimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.skeleton-text{height:12px;width:60%;margin:4px 0}
+.skeleton-value{height:20px;width:40%;margin:2px 0}
+/* ── Sparkline ── */
+.sparkline{width:100%;height:40px;margin-top:6px;opacity:.7}
+/* ── Refresh indicator ── */
+.refresh-icon{display:inline-block;width:12px;height:12px;border:2px solid var(--text-muted);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;vertical-align:middle;margin-right:4px}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* ── Updated value flash ── */
+@keyframes valueFlash{0%{color:var(--accent)}100%{color:var(--text)}}
+.value-updated{animation:valueFlash .6s ease}
+.error-banner{background:#ef444420;border:1px solid #ef444440;border-radius:var(--radius);padding:6px 10px;font-size:11px;color:var(--red);margin-bottom:8px;display:none}
+.error-banner.show{display:block}
+.last-update{text-align:center;font-size:9px;color:var(--text-muted);margin-top:12px;padding:4px}
+.card-toggle-label{display:inline-flex;align-items:center;gap:4px;font-size:9px;color:var(--text-dim);cursor:pointer;background:none;border:none;padding:2px 5px;border-radius:4px}
+.card-toggle-label:hover{background:var(--surface2)}
+/* ── Extra mobile safeguards ── */
+@media(max-width:480px){
+.gateway-chip{font-size:10px;padding:3px 6px}
+.gateway-row{gap:4px}
+.session-meta{gap:4px}
+.session-meta span+span::before{content:'·';margin-right:4px;color:var(--text-muted)}
+.session-meta span:first-child::before{content:'';margin:0}
+.agent-root-header > span:not(.toggle):not(.agent-source-badge):not(.agent-model):not(.agent-stats){font-size:11px}
+.sys-stat{padding:4px 6px;min-width:50px}
+.summary-item{padding:6px 4px}
+.summary-item .s-value{font-size:13px}
+}</style>
+</head>
+<body>
+
+<div id="toastContainer"></div>
+
+<div class="header">
+  <h1>⚡ Hermes</h1>
+  <span class="subtitle">Real-Time</span>
+  <div class="status-badge">
+    <span class="dot green pulse" id="connDot"></span>
+    <span id="connStatus">Connected</span>
+  </div>
+</div>
+
+<div class="error-banner" id="errorBanner"></div>
+
+<!-- Summary KPIs -->
+<div class="summary" id="summaryBar">
+  <div class="summary-item" data-scroll="gatewaySection"><div class="s-label">Gateway</div><div class="s-value" id="sGateway">—</div><div class="s-sub" id="sGatewaySub">connecting</div></div>
+  <div class="summary-item" data-scroll="sessionSection"><div class="s-label">Sessions</div><div class="s-value" id="sSessions">0</div><div class="s-sub">active</div></div>
+  <div class="summary-item" data-scroll="taskSection"><div class="s-label">Tasks</div><div class="s-value" id="sTasks">0</div><div class="s-sub">active</div></div>
+  <div class="summary-item" data-scroll="agentSection"><div class="s-label">Agents</div><div class="s-value" id="sAgents">0</div><div class="s-sub" id="sAgentsSub">roots</div></div>
+  <div class="summary-item" data-scroll="socatSection"><div class="s-label">Socats</div><div class="s-value" id="sSocats">—</div><div class="s-sub" id="sSocatsSub">checking</div></div>
+  <div class="summary-item" data-scroll="cronSection"><div class="s-label">Crons</div><div class="s-value" id="sCrons">0</div><div class="s-sub">jobs</div></div>
+  <div class="summary-item" data-scroll="systemSection"><div class="s-label">System</div><div class="s-value" id="sLoad">—</div><div class="s-sub">load 1m</div></div>
+  <div class="summary-item"><div class="s-label">Uptime</div><div class="s-value" id="sUptime">—</div><div class="s-sub">server</div></div>
+</div>
+
+<div class="grid" id="dashboardGrid">
+  <!-- Gateway -->
+  <div class="card full" id="gatewaySection">
+    <div class="card-title">
+      <span>🖧 Gateway</span>
+      <span class="count" id="gatewayState">—</span>
+      <button class="card-toggle" onclick="toggleCard(this)" title="Toggle section">−</button>
+    </div>
+    <div class="card-content"><div class="gateway-row" id="gatewayInfo"></div></div>
+  </div>
+
+  <!-- System -->
+  <div class="card" id="systemSection">
+    <div class="card-title">
+      <span>💻 System</span>
+      <button class="card-toggle" onclick="toggleCard(this)" title="Toggle section">−</button>
+    </div>
+    <div class="card-content"><div class="sys-row" id="systemInfo"></div><canvas id="loadSparkline" class="sparkline" width="400" height="40"></canvas></div>
+  </div>
+
+  <!-- Sessions -->
+  <div class="card" id="sessionSection">
+    <div class="card-title">
+      <span>💬 Sessions</span>
+      <span class="count" id="sessionCount">0</span>
+      <button class="card-toggle" onclick="toggleCard(this)" title="Toggle section">−</button>
+    </div>
+    <div class="card-content"><div id="sessionList"><div class="empty">No active sessions</div></div></div>
+  </div>
+
+  <!-- Agent Tree -->
+  <div class="card full" id="agentSection">
+    <div class="card-title">
+      <span>🤖 Agent Tree</span>
+      <span class="count" id="agentCount">0</span>
+      <button class="card-toggle" onclick="toggleCard(this)" title="Toggle section">−</button>
+    </div>
+    <div class="card-content"><div id="agentTree"><div class="empty">No active agents</div></div></div>
+  </div>
+
+  <!-- Kanban Tasks -->
+  <div class="card full" id="taskSection">
+    <div class="card-title">
+      <span>📋 Active Tasks</span>
+      <span class="count" id="taskCount">0</span>
+      <button class="card-toggle" onclick="toggleCard(this)" title="Toggle section">−</button>
+    </div>
+    <div class="card-content"><div id="taskList"><div class="empty">No active tasks</div></div></div>
+  </div>
+
+  <!-- Processes -->
+  <div class="card full" id="procSection">
+    <div class="card-title">
+      <span>⚙️ Processes</span>
+      <span class="count" id="procCount">0</span>
+      <button class="card-toggle" onclick="toggleCard(this)" title="Toggle section">−</button>
+    </div>
+    <div class="card-content"><div id="procList"><div class="empty">No tracked processes</div></div></div>
+  </div>
+
+  <!-- Socat -->
+  <div class="card full" id="socatSection">
+    <div class="card-title">
+      <span>🔌 Socat Forwards</span>
+      <span class="status-dot" id="socatStatus">●</span>
+      <button class="card-toggle" onclick="toggleCard(this)" title="Toggle section">−</button>
+    </div>
+    <div class="card-content"><div id="socatList"><div class="empty">Checking...</div></div></div>
+  </div>
+
+  <!-- Cron Jobs -->
+  <div class="card full" id="cronSection">
+    <div class="card-title">
+      <span>⏰ Cron Jobs</span>
+      <span class="count" id="cronCount">0</span>
+      <button class="card-toggle" onclick="toggleCard(this)" title="Toggle section">−</button>
+    </div>
+    <div class="card-content">
+      <div class="cron-tabs">
+        <button class="cron-tab active" onclick="switchCronTab('daily',this)">📆 Daily</button>
+        <button class="cron-tab" onclick="switchCronTab('weekly',this)">📅 Weekly</button>
+      </div>
+      <div id="cronDailySection">
+        <div class="cron-section-title">Daily <span class="count" id="cronDailyCount">0</span></div>
+        <div class="cron-jobs" id="cronDailyList"></div>
+      </div>
+      <div id="cronWeeklySection" style="display:none">
+        <div class="cron-section-title">Weekly <span class="count" id="cronWeeklyCount">0</span></div>
+        <div class="cron-jobs" id="cronWeeklyList"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Workers -->
+  <div class="card" id="workerSection">
+    <div class="card-title">
+      <span>🔧 Workers</span>
+      <span class="count" id="workerCount">0</span>
+      <button class="card-toggle" onclick="toggleCard(this)" title="Toggle section">−</button>
+    </div>
+    <div class="card-content"><div id="workerList"><div class="empty">No workers</div></div></div>
+  </div>
+
+  <!-- Tool Calls -->
+  <div class="card" id="toolsSection">
+    <div class="card-title">
+      <span>🛠️ Tool Calls</span>
+      <span class="count" id="toolCallCount">0</span>
+      <button class="card-toggle" onclick="toggleCard(this)" title="Toggle section">−</button>
+    </div>
+    <div class="card-content"><div id="toolCallList"><div class="empty">No tool calls</div></div></div>
+  </div>
+
+  <!-- Events -->
+  <div class="card full" id="eventSection">
+    <div class="card-title">
+      <span>📋 Event History</span>
+      <span class="count" id="eventCount">0</span>
+      <button class="card-toggle" onclick="toggleCard(this)" title="Toggle section">−</button>
+    </div>
+    <div class="card-content"><div id="eventList"><div class="empty">Waiting for events...</div></div></div>
+  </div>
+</div>
+
+<div class="last-update" id="lastUpdate">Connecting...</div>
+
+<!-- Bottom nav for mobile -->
+<div class="bottom-nav" id="bottomNav">
+  <button onclick="scrollToSection('gatewaySection')"><span class="nav-icon">🖧</span>Gateway</button>
+  <button onclick="scrollToSection('agentSection')"><span class="nav-icon">🤖</span>Agents</button>
+  <button onclick="scrollToSection('cronSection')"><span class="nav-icon">⏰</span>Crons</button>
+  <button onclick="scrollToSection('taskSection')"><span class="nav-icon">📋</span>Tasks</button>
+  <button onclick="scrollToSection('socatSection')"><span class="nav-icon">🔌</span>Socat</button>
+  <button onclick="scrollToSection('eventSection')"><span class="nav-icon">📋</span>Events</button>
+  <button onclick="scrollToSection('systemSection')"><span class="nav-icon">💻</span>Sys</button>
+</div>
+
+<script>
+const WS_URL = `${location.protocol === 'https:' ? 'wss:' : 'ws:'}//${location.host}/ws`;
+let ws = null;
+let reconnTimer = null;
+
+function connect() {
+  const dot = document.getElementById('connDot');
+  const status = document.getElementById('connStatus');
+  dot.className = 'dot yellow pulse';
+  status.textContent = 'Connecting...';
+  ws = new WebSocket(WS_URL);
+  ws.onopen = () => { dot.className = 'dot green'; status.textContent = 'Connected'; hideError(); };
+  ws.onmessage = e => { try { const msg = JSON.parse(e.data); if (msg.type === 'snapshot') render(msg.data); } catch (err) { console.error('parse error', err); } };
+  ws.onclose = () => { dot.className = 'dot red'; status.textContent = 'Disconnected'; showError('Connection lost — reconnecting...'); reconnTimer = setTimeout(connect, 2000); };
+  ws.onerror = () => { dot.className = 'dot red'; status.textContent = 'Error'; };
+}
+function showError(msg) { const el = document.getElementById('errorBanner'); el.textContent = msg; el.classList.add('show'); }
+function hideError() { document.getElementById('errorBanner').classList.remove('show'); }
+
+function fmtTime(ts) {
+  if (!ts) return '—';
+  const d = typeof ts === 'number' ? new Date(ts * 1000) : new Date(ts);
+  if (isNaN(d.getTime())) return '—';
+  const pad = n => String(n).padStart(2, '0');
+  return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+}
+function fmtUptime(secs) {
+  if (!secs) return '—';
+  const h = Math.floor(secs / 3600), m = Math.floor((secs % 3600) / 60), s = Math.floor(secs % 60);
+  if (h > 24) return `${Math.floor(h/24)}d ${h%24}h`;
+  if (h > 0) return `${h}h ${m}m`;
+  if (m > 0) return `${m}m ${s}s`;
+  return `${s}s`;
+}
+function fmtAgo(ts) {
+  if (!ts) return '—';
+  const t = typeof ts === 'number' ? ts : new Date(ts).getTime() / 1000;
+  const diff = Date.now() / 1000 - t;
+  if (diff < 60) return 'now';
+  if (diff < 3600) return `${Math.floor(diff/60)}m ago`;
+  if (diff < 86400) return `${Math.floor(diff/3600)}h ago`;
+  return `${Math.floor(diff/86400)}d ago`;
+}
+function esc(s) { if (!s) return ''; const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+// ── Card toggle ──
+function toggleCard(btn) {
+  const card = btn.closest('.card');
+  card.classList.toggle('collapsed');
+  btn.textContent = card.classList.contains('collapsed') ? '+' : '−';
+}
+// ── Scroll to section ──
+function scrollToSection(id) {
+  const el = document.getElementById(id);
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+// ── Cron tab switch ──
+function switchCronTab(tab, btn) {
+  document.querySelectorAll('.cron-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('cronDailySection').style.display = tab === 'daily' ? '' : 'none';
+  document.getElementById('cronWeeklySection').style.display = tab === 'weekly' ? '' : 'none';
+}
+// Summary items scrolling
+document.querySelectorAll('.summary-item[data-scroll]').forEach(el => {
+  el.addEventListener('click', () => scrollToSection(el.dataset.scroll));
+});
+
+// ── Toast ──
+const NOTIFICATION_TOAST_ID = 'hermes-notification-toast';
+function showNotification(title, message) {
+  let toast = document.getElementById(NOTIFICATION_TOAST_ID);
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = NOTIFICATION_TOAST_ID;
+    toast.style.cssText = 'position:fixed;bottom:20px;right:20px;background:#1c1917;color:#e2e2ea;border:1px solid #44403c;border-radius:8px;padding:12px 16px;z-index:9999;max-width:360px;width:90vw;box-shadow:0 4px 20px rgba(0,0,0,.5);animation:toastIn .3s ease;font-size:13px;line-height:1.4';
+    document.body.appendChild(toast);
+  }
+  toast.innerHTML = `<div style="font-weight:600;margin-bottom:4px">${esc(title)}</div><div style="color:#a8a29e">${esc(message)}</div>`;
+  toast.style.display = 'block';
+  clearTimeout(toast._hideTimer);
+  toast._hideTimer = setTimeout(() => { toast.style.display = 'none'; }, 5000);
+}
+
+function render(data) {
+  // Last update
+  document.getElementById('lastUpdate').textContent = `Updated: ${data.datetime || '—'} · 3s refresh`;
+
+  // ── Gateway ──
+  const gw = data.gateway || {};
+  const stateEl = document.getElementById('gatewayState');
+  stateEl.textContent = gw.state === 'running' ? '● Running' : '● ' + (gw.state || '?');
+  stateEl.style.color = gw.state === 'running' ? 'var(--green)' : 'var(--red)';
+  const gwInfo = document.getElementById('gatewayInfo');
+  const platforms = gw.platforms || {};
+  const platChips = Object.entries(platforms).map(([name, p]) => {
+    const ok = p.state === 'connected';
+    const off = p.state === 'disabled' || p.error_code === 'missing_credentials';
+    const label = ok
+      ? (p.delegated_to ? `OK (${p.delegated_to})` : 'OK')
+      : (off ? (p.error_message || 'off') : (p.error_message || 'DOWN'));
+    const color = ok ? 'var(--green)' : (off ? 'var(--text-muted)' : 'var(--red)');
+    const dot = ok ? 'green' : (off ? '' : 'red');
+    return `<div class="gateway-chip"><span class="dot ${dot}"></span>${name}: <span class="num" style="color:${color}">${label}</span></div>`;
+  }).join('');
+  gwInfo.innerHTML = `
+    <div class="gateway-chip">PID: <span class="num">${gw.pid || '?'}</span></div>
+    <div class="gateway-chip">Active: <span class="num">${gw.active_agents ?? '?'}</span></div>
+    <div class="gateway-chip">Uptime: <span class="num">${fmtUptime(gw.uptime_seconds)}</span></div>
+    ${platChips}`;
+
+  // ── System ──
+  const sys = data.system || {};
+  document.getElementById('systemInfo').innerHTML = sys.load_1m != null ? `
+    <div class="sys-stat"><div class="label">Load</div><div class="value">${sys.load_1m}</div></div>
+    <div class="sys-stat"><div class="label">Mem</div><div class="value">${sys.memory ? Math.round((sys.memory.total_kb - sys.memory.available_kb) / sys.memory.total_kb * 100) + '%' : '?'}</div></div>
+    <div class="sys-stat"><div class="label">Procs</div><div class="value">${sys.process_count ?? '?'}</div></div>
+    <div class="sys-stat"><div class="label">Uptime</div><div class="value">${fmtUptime(sys.uptime_seconds)}</div></div>`
+    : '<div class="empty">No system data</div>';
+
+  // ── Sessions ──
+  const sessions = data.sessions || [];
+  document.getElementById('sessionCount').textContent = sessions.length;
+  document.getElementById('sessionList').innerHTML = sessions.length
+    ? sessions.slice(0, 8).map(s => `
+      <div class="session-item">
+        <div class="session-title">${esc(s.title || s.id?.slice(0,12) || 'Session')}</div>
+        <div class="session-meta">
+          <span>${esc(s.source || '?')}</span>
+          <span>💬 ${s.message_count ?? 0}</span>
+          <span>🛠️ ${s.tool_call_count ?? 0}</span>
+          <span>${fmtTime(s.started_at)}</span>
+          <span>${esc(s.model || '')}</span>
+        </div>
+      </div>`).join('')
+    : '<div class="empty">No active sessions</div>';
+
+  // ── Kanban Tasks ──
+  const kanban = data.kanban || {};
+  const tasks = kanban.tasks || [];
+  const links = kanban.links || [];
+  document.getElementById('taskCount').textContent = tasks.length;
+  const childMap = {};
+  links.forEach(l => { if (!childMap[l.parent_id]) childMap[l.parent_id] = []; childMap[l.parent_id].push(l.child_id); });
+  const childIds = new Set(links.map(l => l.child_id));
+  const parentTasks = tasks.filter(t => !childIds.has(t.id));
+  const allTaskIds = new Set(tasks.map(t => t.id));
+  document.getElementById('taskList').innerHTML = tasks.length
+    ? parentTasks.slice(0, 10).map(t => {
+        const subs = (childMap[t.id] || []).filter(sid => allTaskIds.has(sid));
+        const st = t.status || 'pending';
+        return `
+          <div class="task-item">
+            <div class="task-top">
+              <span class="dot ${t.worker_alive ? 'green' : t.worker_alive === false ? 'red' : 'yellow'}" style="margin-top:3px;flex-shrink:0"></span>
+              <span class="title">${esc(t.title || 'Untitled')}</span>
+              <span class="task-status ${st}">${st}</span>
+            </div>
+            <div class="task-meta">
+              ${t.assignee ? `<span>👤 ${esc(t.assignee)}</span>` : ''}
+              ${t.priority ? `<span>⚡ ${esc(t.priority)}</span>` : ''}
+              ${t.started_at ? `<span>▶ ${fmtTime(t.started_at)}</span>` : ''}
+              ${t.last_heartbeat_at ? `<span>❤️ ${fmtAgo(t.last_heartbeat_at)}</span>` : ''}
+            </div>
+            ${subs.length ? `<div class="task-subtasks">${subs.map(sid => {
+              const sub = tasks.find(x => x.id === sid);
+              return sub ? `<li><span class="dot ${sub.worker_alive ? 'green' : sub.worker_alive === false ? 'red' : 'yellow'}" style="width:4px;height:4px;display:inline-block;border-radius:50%;margin-right:4px"></span> ${esc(sub.title)} <span class="task-status ${sub.status}" style="font-size:10px">${sub.status}</span></li>` : '';
+            }).join('')}</div>` : ''}
+          </div>`;
+      }).join('')
+    : '<div class="empty">No active tasks</div>';
+
+  // ── Processes ──
+  const procs = data.processes || [];
+  document.getElementById('procCount').textContent = procs.length;
+  document.getElementById('procList').innerHTML = procs.length
+    ? procs.map(p => `
+      <div class="proc-item">
+        <span class="proc-alive"></span>
+        <span class="proc-pid">${p.pid}</span>
+        <span class="proc-cmd" title="${esc(p.command)}">${esc(p.command?.slice(0, 80)) || '?'}</span>
+        <span class="proc-time">${fmtUptime(p.uptime_seconds)}</span>
+      </div>`).join('')
+    : '<div class="empty">No tracked processes</div>';
+
+  // ── Socat ──
+  const socats = data.socats || {};
+  const forwards = socats.forwards || {};
+  const allUp = socats.all_up !== false;
+  const socatDot = document.getElementById('socatStatus');
+  if (socatDot) { socatDot.className = 'status-dot ' + (allUp ? 'socat-up' : 'socat-down'); socatDot.textContent = allUp ? '● All OK' : '● DOWN'; }
+  if (!allUp && window._socatsWereUp !== false) {
+    const downPorts = Object.entries(forwards).filter(([_, v]) => v === 'down').map(([k]) => k);
+    showNotification('⚠️ Socat Forward Down', 'Down: ' + downPorts.join(', '));
+  }
+  window._socatsWereUp = allUp;
+  document.getElementById('socatList').innerHTML = Object.keys(forwards).length
+    ? Object.entries(forwards).map(([name, status]) => `
+      <div class="proc-item">
+        <span class="proc-alive" style="background:${status === 'up' ? '#22c55e' : '#ef4444'}"></span>
+        <span class="proc-cmd">${esc(name)}</span>
+        <span style="margin-left:auto;font-size:10px;color:${status === 'up' ? '#22c55e' : '#ef4444'};font-weight:600">${status === 'up' ? 'UP' : 'DOWN'}</span>
+      </div>`).join('')
+    : '<div class="empty">No socat data</div>';
+
+  // ── Agent Tree ──
+  const tree = data.agent_tree || {};
+  const roots = tree.roots || [];
+  const orphans = tree.orphan_tasks || [];
+  const taskLinks = tree.task_links || [];
+  const allTasks = tree.all_tasks || {};
+  document.getElementById('agentCount').textContent = roots.length + (orphans.length ? ` +${orphans.length}` : '');
+  const subTaskMap = {};
+  taskLinks.forEach(l => { if (!subTaskMap[l.parent_id]) subTaskMap[l.parent_id] = []; subTaskMap[l.parent_id].push(l.child_id); });
+  function renderTask(task) {
+    const st = task.status || 'pending';
+    const subs = (subTaskMap[task.id] || []).filter(sid => allTasks[sid] || false);
+    return `<div class="agent-task">
+      <div class="agent-task-header">
+        <span class="dot ${task.worker_alive ? 'green' : task.worker_alive === false ? 'red' : 'yellow'}" style="width:5px;height:5px;flex-shrink:0"></span>
+        <span>${esc(task.title || 'Untitled')}</span>
+        <span class="task-status ${st}" style="font-size:9px">${st}</span>
+        ${task.worker_pid ? `<span style="font-size:9px;color:var(--text-muted)">PID ${task.worker_pid}</span>` : ''}
+      </div>
+      ${subs.length ? subs.map(sid => {
+        const sub = allTasks[sid];
+        return sub ? `<div class="agent-subtask"><span class="dot ${sub.worker_alive ? 'green' : sub.worker_alive === false ? 'red' : 'yellow'}" style="width:4px;height:4px;display:inline-block;border-radius:50%;margin-right:4px"></span> ${esc(sub.title)} <span class="task-status ${sub.status || 'pending'}" style="font-size:9px">${sub.status || '?'}</span></div>` : '';
+      }).join('') : ''}
+    </div>`;
+  }
+  function fmtTokenCount(n) { if (!n) return '0'; if (n >= 1000000) return (n/1000000).toFixed(1)+'M'; if (n >= 1000) return (n/1000).toFixed(1)+'K'; return String(n); }
+  function renderAgentDetails(s) {
+    const model = esc(s.model || '—'), age = fmtUptime(s.age_seconds);
+    const lastAct = s.last_activity_seconds_ago < 10 ? 'now' : fmtUptime(s.last_activity_seconds_ago) + ' ago';
+    const tokens = fmtTokenCount(s.total_tokens), inputT = fmtTokenCount(s.input_tokens || 0), outputT = fmtTokenCount(s.output_tokens || 0);
+    const cost = s.estimated_cost_usd ? '$' + Number(s.estimated_cost_usd).toFixed(4) : '—';
+    return `<div class="agent-details" id="agentDetails">
+      <div class="row"><span>Model: <span class="val">${model}</span></span><span>Age: <span class="val">${age}</span></span><span>Last: <span class="val">${lastAct}</span></span></div>
+      <div class="row"><span>Tokens: <span class="val">${tokens}</span> (in: ${inputT} · out: ${outputT})</span><span>Cost: <span class="val">${cost}</span></span></div>
+    </div>`;
+  }
+  document.getElementById('agentTree').innerHTML = roots.length
+    ? roots.map((r, i) => {
+        const s = r.session || {};
+        const src = s.source || '?';
+        const childSessions = r.child_sessions || [];
+        const tasks = r.tasks || [];
+        const totalMsgs = (s.message_count || 0) + childSessions.reduce((sum, c) => sum + (c.message_count || 0), 0);
+        const totalTools = (s.tool_call_count || 0) + childSessions.reduce((sum, c) => sum + (c.tool_call_count || 0), 0);
+        const isActive = s.last_activity_seconds_ago < 120;
+        const lastActStr = s.last_activity_seconds_ago < 10 ? 'now' : fmtUptime(s.last_activity_seconds_ago) + ' ago';
+        return `<div class="agent-root" style="border-left-color:${isActive ? 'var(--green)' : 'var(--accent-dim)'}">
+          <div class="agent-root-header" onclick="toggleAgentRoot(this)">
+            <span class="toggle" id="agentToggle${i}">▼</span>
+            <span class="agent-source-badge ${src}" style="${isActive ? 'box-shadow: 0 0 8px rgba(34,197,94,.3)' : ''}">${src}</span>
+            <span style="flex:1;font-weight:600">${esc(s.title || s.id?.slice(0,16) || 'Agent')}</span>
+            <span class="agent-model">${esc(s.model || '').split('/').pop()}</span>
+            <span class="agent-stats"><span>💬 ${totalMsgs}</span><span>🛠️ ${totalTools}</span><span style="font-size:9px;color:${isActive ? 'var(--green)' : 'var(--text-muted)'}">${lastActStr}</span></span>
+          </div>
+          <div class="agent-children" id="agentChildren${i}">
+            <div style="font-size:10px;cursor:pointer;color:var(--text-dim);padding:2px 0" onclick="toggleDetails(this)">📊 Details ▸</div>
+            ${renderAgentDetails(s)}
+            ${tasks.map(t => renderTask(t)).join('')}
+            ${childSessions.map(c => {
+              const cTasks = c.tasks || [];
+              const cActive = c.last_activity_seconds_ago < 120;
+              return `<div class="agent-child" style="border-left-color:${cActive ? 'var(--green)' : ''}">
+                <div style="display:flex;align-items:center;gap:4px;padding:2px 0">
+                  <span class="dot ${cActive ? 'green' : 'blue'}" style="width:5px;height:5px;flex-shrink:0"></span>
+                  <span style="flex:1;font-size:11px">${esc(c.title || 'Sub-agent')}</span>
+                  <span style="font-size:10px;color:var(--text-dim)">💬 ${c.message_count||0}</span>
+                  <span style="font-size:10px;color:var(--text-dim)">🛠️ ${c.tool_call_count||0}</span>
+                </div>
+                ${cTasks.map(t => renderTask(t)).join('')}
+              </div>`;
+            }).join('')}
+            ${!tasks.length && !childSessions.length ? '<div style="font-size:11px;color:var(--text-muted);padding:3px 0">Idle — no sub-agents</div>' : ''}
+          </div>
+        </div>`;
+      }).join('') + (orphans.length ? `<div style="margin-top:6px;font-size:11px;color:var(--text-muted)">${orphans.length} orphan task(s)</div>` : '')
+    : '<div class="empty">No active agents</div>';
+
+  // ── Workers ──
+  const workers = data.workers || [];
+  document.getElementById('workerCount').textContent = workers.length;
+  document.getElementById('workerList').innerHTML = workers.length
+    ? workers.map(w => {
+        const rss = w.rss_kb >= 1024 ? (w.rss_kb/1024).toFixed(1)+' MB' : w.rss_kb+' KB';
+        return `<div class="worker-item">
+          <span class="dot green" style="width:5px;height:5px;flex-shrink:0"></span>
+          <span class="worker-pid">${w.pid}</span>
+          <span class="worker-cmd" title="${esc(w.command || '')}">${esc(w.command || '').slice(0, 80)}</span>
+          <span class="worker-rss">${rss}</span>
+        </div>`;
+      }).join('')
+    : '<div class="empty">No workers</div>';
+
+  // ── Tool Calls ──
+  const toolCalls = tree.recent_tool_calls || [];
+  document.getElementById('toolCallCount').textContent = toolCalls.length;
+  document.getElementById('toolCallList').innerHTML = toolCalls.length
+    ? toolCalls.map(tc => {
+        const sessionLabel = tc.session_id ? tc.session_id.slice(0, 12) : '?';
+        return `<div class="tool-call-item">
+          <span class="dot blue" style="width:4px;height:4px;flex-shrink:0"></span>
+          <span class="tool-name">${esc(tc.tool_name || '?')}</span>
+          <span>${esc(tc.role || '')}</span>
+          <span style="margin-left:auto;font-size:9px">${fmtTime(tc.timestamp)}</span>
+        </div>`;
+      }).join('')
+    : '<div class="empty">No recent tool calls</div>';
+
+  // ── Events & Toasts ──
+  const events = data.events || [];
+  const eventHistory = data.event_history || [];
+  document.getElementById('eventCount').textContent = eventHistory.length;
+  events.forEach(ev => {
+    const icons = {agent_started:'🚀',agent_working:'⚡',agent_idle:'💤',agent_ended:'❌',tool_milestone:'🛠️'};
+    const classes = {agent_started:'started',agent_working:'working',agent_idle:'idle',agent_ended:'ended',tool_milestone:'working'};
+    const icon = icons[ev.kind] || '📌', cls = classes[ev.kind] || '';
+    showToast(icon, ev.title, ev.detail, cls);
+  });
+  const eventIcons = {agent_started:'🚀',agent_working:'⚡',agent_idle:'💤',agent_ended:'❌',tool_milestone:'🛠️'};
+  document.getElementById('eventList').innerHTML = eventHistory.length
+    ? eventHistory.map(ev => {
+        const icon = eventIcons[ev.kind] || '📌';
+        return `<div class="event-item"><span class="event-icon">${icon}</span><div class="event-body"><div class="event-title">${esc(ev.title)}</div><div class="event-detail">${esc(ev.detail)} · ${esc(ev.source)}</div></div><span class="event-time">${fmtTime(ev.timestamp)}</span></div>`;
+      }).join('')
+    : '<div class="empty">No events yet</div>';
+
+  // ── Cron Jobs ──
+  const cronData = data.cron_files || {};
+  const jobs = cronData.jobs || [];
+  const now = new Date();
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime() / 1000;
+  // Monday of current week at 00:00
+  const dayOfWeek = now.getDay(); // 0=Sun, 1=Mon...
+  const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+  const weekStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() + mondayOffset).getTime() / 1000;
+
+  function parseCronExpr(expr) {
+    if (!expr || typeof expr !== 'string') return null;
+    const parts = expr.trim().split(/\s+/);
+    if (parts.length < 5) return null;
+    return { minute: parts[0], hour: parts[1], dom: parts[2], month: parts[3], dow: parts[4] };
+  }
+  function fmtCronTime(expr) {
+    const c = parseCronExpr(expr);
+    if (!c) return expr;
+    const h = c.hour, m = c.minute;
+    if (h === '*') return `every hour at :${m}`;
+    if (m === '*') return `${h.padStart(2,'0')}:*`;
+    if (h.includes(',')) {
+      const hrs = h.split(',').map(x => `${x.padStart(2,'0')}:${m.padStart(2,'0')}`);
+      return hrs.join(', ');
+    }
+    return `${h.padStart(2,'0')}:${m.padStart(2,'0')}`;
+  }
+  function isDailyJob(schedule) {
+    if (!schedule) return false;
+    const expr = schedule.expr || schedule.display || '';
+    const c = parseCronExpr(expr);
+    if (!c) return schedule.kind === 'interval';
+    // Daily = no day-of-week restriction OR * for dow AND * for dom
+    if (c.dow === '*') return true;
+    return false;
+  }
+  function isWeeklyJob(schedule) {
+    if (!schedule) return false;
+    const expr = schedule.expr || schedule.display || '';
+    const c = parseCronExpr(expr);
+    if (!c) return false;
+    if (c.dow === '*' || c.dow === '?') return false;
+    return true;
+  }
+  function fmtDow(dow) {
+    const days = { 0:'Sun',1:'Mon',2:'Tue',3:'Wed',4:'Thu',5:'Fri',6:'Sat',7:'Sun' };
+    if (dow === '*') return '';
+    if (dow.includes(',')) return dow.split(',').map(d => days[d]||d).join(',');
+    if (dow.includes('-')) {
+      const [s,e] = dow.split('-').map(Number);
+      return days[s] + '-' + days[e];
+    }
+    return days[dow] || dow;
+  }
+
+  document.getElementById('sCrons').textContent = jobs.length;
+
+  const dailyJobs = jobs.filter(j => isDailyJob(j.schedule));
+  const weeklyJobs = jobs.filter(j => isWeeklyJob(j.schedule));
+
+  document.getElementById('cronDailyCount').textContent = dailyJobs.length;
+  document.getElementById('cronWeeklyCount').textContent = weeklyJobs.length;
+
+  function renderCronJob(job) {
+    const schedule = job.schedule || {};
+    const expr = schedule.expr || schedule.display || '';
+    const timeStr = fmtCronTime(expr);
+    const lastRun = job.last_run_at ? new Date(job.last_run_at).getTime() / 1000 : null;
+    const lastRunTs = job.output_mtime || lastRun;
+    const isRunning = job.state === 'running' || (lastRunTs && (now.getTime()/1000 - lastRunTs) < 120);
+    const isWeekly = isWeeklyJob(job.schedule);
+    const isToday = lastRunTs && lastRunTs >= todayStart;
+    const isThisWeek = lastRunTs && lastRunTs >= weekStart;
+    
+    let icon = '⏳'; // clock = pending
+    let statusClass = '';
+    let statusText = '';
+    let lastRunText = '';
+
+    if (isRunning) {
+      icon = '🔄';
+      statusText = 'running';
+      statusClass = 'ok';
+    } else if (isWeekly) {
+      if (isThisWeek) {
+        icon = '✅';
+        statusText = 'this week';
+        statusClass = 'ok';
+      } else {
+        icon = '⏳';
+        statusText = 'pending';
+      }
+    } else {
+      if (isToday) {
+        icon = '✅';
+        statusText = 'today';
+        statusClass = 'ok';
+      } else {
+        icon = '⏳';
+        statusText = 'pending';
+      }
+    }
+
+    if (lastRunTs) {
+      lastRunText = fmtTime(lastRunTs);
+    } else {
+      lastRunText = 'never';
+    }
+
+    const statusBadge = job.last_status === 'error' ? 'err' : (job.last_status === 'ok' ? 'ok' : '');
+
+    // For weekly jobs, also show day of week
+    const extra = isWeekly && expr ? fmtDow(parseCronExpr(expr)?.dow) : '';
+
+    return `<div class="cron-job">
+      <span class="icon">${icon}</span>
+      <span class="name" title="${esc(job.name || job.id || '?')}">${esc((job.name || job.id || '?').slice(0, 24))}</span>
+      <span class="time">${esc(timeStr)}${extra ? ' ' + extra : ''}</span>
+      <span class="last-run">${lastRunText}</span>
+      <span class="status ${statusBadge}">${esc(statusText)}</span>
+    </div>`;
+  }
+
+  document.getElementById('cronDailyList').innerHTML = dailyJobs.length
+    ? dailyJobs.map(renderCronJob).join('')
+    : '<div class="cron-empty">No daily cron jobs</div>';
+
+  document.getElementById('cronWeeklyList').innerHTML = weeklyJobs.length
+    ? weeklyJobs.map(renderCronJob).join('')
+    : '<div class="cron-empty">No weekly cron jobs</div>';
+
+  // ── Summary KPIs ──
+  document.getElementById('sGateway').textContent = gw.state === 'running' ? '●' : '?';
+  document.getElementById('sGateway').style.color = gw.state === 'running' ? 'var(--green)' : 'var(--red)';
+  document.getElementById('sGatewaySub').textContent = gw.active_agents != null ? `${gw.active_agents} agents` : (gw.state || '?');
+  document.getElementById('sSessions').textContent = sessions.length;
+  document.getElementById('sTasks').textContent = tasks.length;
+  document.getElementById('sAgents').textContent = roots.length;
+  document.getElementById('sAgentsSub').textContent = orphans.length ? `${roots.length} roots + ${orphans.length}` : `${roots.length} roots`;
+  document.getElementById('sSocats').textContent = allUp ? '✓' : '⚠';
+  document.getElementById('sSocats').style.color = allUp ? 'var(--green)' : 'var(--red)';
+  document.getElementById('sSocatsSub').textContent = allUp ? 'all OK' : 'DOWN!';
+  document.getElementById('sLoad').textContent = sys.load_1m != null ? sys.load_1m : '—';
+  document.getElementById('sUptime').textContent = fmtUptime(sys.uptime_seconds);
+}
+
+// ── Service Worker ──
+if ('serviceWorker' in navigator) { navigator.serviceWorker.register('/sw.js').catch(() => {}); }
+
+// ── Agent Tree Toggles ──
+function toggleAgentRoot(el) {
+  const children = el.nextElementSibling;
+  const toggle = el.querySelector('.toggle');
+  if (children) { const isHidden = children.style.display === 'none'; children.style.display = isHidden ? '' : 'none'; if (toggle) toggle.classList.toggle('collapsed', !isHidden); }
+}
+function toggleDetails(el) {
+  const details = el.nextElementSibling;
+  if (details && details.classList.contains('agent-details')) {
+    details.classList.toggle('show');
+    el.textContent = details.classList.contains('show') ? '📊 Details ▾' : '📊 Details ▸';
+  }
+}
+function showToast(icon, title, detail, cls) {
+  const container = document.getElementById('toastContainer');
+  if (!container) return;
+  const toast = document.createElement('div');
+  toast.className = `toast ${cls}`;
+  toast.innerHTML = `<span class="toast-dot"></span><span><strong>${icon} ${esc(title)}</strong><br><span style="font-size:10px;color:var(--text-dim)">${esc(detail)}</span></span>`;
+  container.appendChild(toast);
+  setTimeout(() => { if (toast.parentNode) toast.remove(); }, 5000);
+}
+
+// ── Sparkline: CPU load history ──
+const LOAD_HISTORY = [];
+const MAX_LOAD_POINTS = 60; // 3 min at 3s intervals
+function updateSparkline(sys, canvasId) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas || !sys || sys.load_1m == null) return;
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width, h = canvas.height;
+  LOAD_HISTORY.push(sys.load_1m);
+  if (LOAD_HISTORY.length > MAX_LOAD_POINTS) LOAD_HISTORY.shift();
+  const maxLoad = Math.max(...LOAD_HISTORY, 1);
+  ctx.clearRect(0, 0, w, h);
+  ctx.beginPath();
+  ctx.strokeStyle = '#ffac02';
+  ctx.lineWidth = 2;
+  ctx.lineJoin = 'round';
+  const stepX = w / (LOAD_HISTORY.length - 1 || 1);
+  LOAD_HISTORY.forEach((val, i) => {
+    const x = i * stepX;
+    const y = h - (val / maxLoad) * h;
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+  // Gradient fill
+  const grad = ctx.createLinearGradient(0, 0, 0, h);
+  grad.addColorStop(0, 'rgba(255,172,2,.2)');
+  grad.addColorStop(1, 'rgba(255,172,2,0)');
+  ctx.lineTo(w, h);
+  ctx.lineTo(0, h);
+  ctx.closePath();
+  ctx.fillStyle = grad;
+  ctx.fill();
+}
+// ── Enhanced last update ──
+let _lastUpdateText = '';
+function updateLastUpdate(datetime) {
+  const el = document.getElementById('lastUpdate');
+  const now = new Date();
+  el.innerHTML = `<span class="refresh-icon"></span> ${datetime || '—'} · ${now.toLocaleTimeString()}`;
+}
+// ── Reconnection counter ──
+let _reconnCount = 0;
+let _origConnect = connect;
+connect = function() {
+  _reconnCount++;
+  if (_reconnCount > 1) {
+    const el = document.getElementById('connStatus');
+    if (el) el.textContent = 'Reconnecting... (' + _reconnCount + ')';
+  }
+  _origConnect();
+};
+// Patch ws.onopen to reset reconn counter
+const _origOnOpen = null;
+const _origConnSetup = function() {
+  const origOpen = WebSocket.prototype.onopen;
+};
+// Wrap the connect function to add sparkline integration
+const _origRender = render;
+render = function(data) {
+  _origRender(data);
+  // Sparkline
+  if (data.system) updateSparkline(data.system, 'loadSparkline');
+  // Enhanced update text
+  updateLastUpdate(data.datetime);
+};
+
+// Start
+connect();
+</script>
+</body>
+</html>

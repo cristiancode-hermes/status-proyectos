@@ -1,0 +1,919 @@
+# Caddyfile — todos los proyectos
+# Generado: 2026-07-24
+{
+	email cristian@cristiancode.dev
+	admin off
+	servers :443 {
+		protocols h1
+	}
+}
+
+# ── Core ────────────────────────────────────────────────
+
+proyectos.cristiancode.dev {
+	encode gzip
+	root * /opt/data/proyectos-cristiancode-dev
+	file_server
+}
+
+widget.proyectos.cristiancode.dev {
+	encode gzip
+	root * /opt/data/dashboard-realtime/widget
+	file_server
+}
+
+status.proyectos.cristiancode.dev {
+	reverse_proxy localhost:3333
+}
+
+shoes.proyectos.cristiancode.dev {
+	encode gzip
+	reverse_proxy localhost:3030
+}
+
+devsnips.proyectos.cristiancode.dev {
+	encode gzip
+	reverse_proxy localhost:5200
+}
+
+app.proyectos.cristiancode.dev {
+	encode gzip
+	reverse_proxy localhost:8787
+}
+
+# ── Proyectos ──────────────────────────────────────────
+
+code-coach.proyectos.cristiancode.dev {
+	encode gzip
+	root * /opt/data/repositorios/2026-06-11-code-coach/apps/web/dist/web/browser
+	file_server
+	@api path /api*
+	handle @api {
+		reverse_proxy localhost:3001
+	}
+	handle {
+		try_files {path} /index.html
+	}
+}
+
+habits.proyectos.cristiancode.dev {
+	encode gzip
+	root * /opt/data/repositorios/2026-06-12-habit-tracker/apps/web/dist/web/browser
+	file_server
+	@api path /api*
+	handle @api {
+		reverse_proxy localhost:3002
+	}
+	handle {
+		try_files {path} /index.html
+	}
+}
+
+snippets.proyectos.cristiancode.dev {
+	encode gzip
+	root * /opt/data/repositorios/2026-06-13-snippet-vault/apps/web/dist/web/browser
+	file_server
+	@api path /api*
+	handle @api {
+		reverse_proxy localhost:3003
+	}
+	handle {
+		try_files {path} /index.html
+	}
+}
+
+rag-kb.proyectos.cristiancode.dev {
+	encode gzip
+	root * /opt/data/repositorios/2026-06-14-rag-knowledge-base/apps/web/dist/web/browser
+	file_server
+	@api path /api*
+	handle @api {
+		reverse_proxy localhost:3004
+	}
+	handle {
+		try_files {path} /index.html
+	}
+}
+
+booking.proyectos.cristiancode.dev {
+	encode gzip
+	root * /opt/data/repositorios/2026-06-15-booking-app/apps/web/dist/web/browser
+	file_server
+	@api path /api*
+	handle @api {
+		reverse_proxy localhost:3005
+	}
+	handle {
+		try_files {path} /index.html
+	}
+}
+
+finance.proyectos.cristiancode.dev {
+	encode gzip
+	root * /opt/data/repositorios/2026-06-16-finance-dashboard/apps/web/dist/web/browser
+	file_server
+	@api path /api*
+	handle @api {
+		reverse_proxy localhost:8899
+	}
+	handle {
+		try_files {path} /index.html
+	}
+}
+
+tech-radar.proyectos.cristiancode.dev {
+	encode gzip
+	root * /opt/data/repositorios/2026-06-17-tecnologia-radar/apps/web/dist/web/browser
+	file_server
+	@api path /api*
+	handle @api {
+		reverse_proxy localhost:3007
+	}
+	handle {
+		try_files {path} /index.html
+	}
+}
+
+links.proyectos.cristiancode.dev {
+	encode gzip
+	root * /opt/data/repositorios/2026-06-18-smart-link-vault/apps/web/dist/web/browser
+	file_server
+	@api path /api*
+	handle @api {
+		reverse_proxy localhost:3008
+	}
+	handle {
+		try_files {path} /index.html
+	}
+}
+
+study.proyectos.cristiancode.dev {
+	encode gzip
+	root * /opt/data/repositorios/2026-06-19-study-buddy/apps/web/dist/web/browser
+	file_server
+	@api path /api*
+	handle @api {
+		reverse_proxy localhost:3009
+	}
+	handle {
+		try_files {path} /index.html
+	}
+}
+
+kanban.proyectos.cristiancode.dev {
+	encode gzip
+	root * /opt/data/repositorios/2026-06-20-kanban-board/apps/web/dist/web/browser
+	file_server
+	@api path /api*
+	handle @api {
+		reverse_proxy localhost:3010
+	}
+	handle {
+		try_files {path} /index.html
+	}
+}
+
+newsletter.proyectos.cristiancode.dev {
+	encode gzip
+	root * /opt/data/repositorios/2026-06-21-newsletter-studio/apps/web/dist/web/browser
+	file_server
+	@api path /api*
+	handle @api {
+		reverse_proxy localhost:3011
+	}
+	handle {
+		try_files {path} /index.html
+	}
+}
+
+interview.proyectos.cristiancode.dev {
+	encode gzip
+	root * /opt/data/repositorios/2026-06-22-interview-coach/apps/web/dist/web/browser
+	file_server
+	@api path /api*
+	handle @api {
+		reverse_proxy localhost:3012
+	}
+	handle {
+		try_files {path} /index.html
+	}
+}
+
+events.proyectos.cristiancode.dev {
+	encode gzip
+	root * /opt/data/repositorios/2026-06-23-event-platform/apps/web/dist/web-tmp/browser
+	file_server
+	@api path /api*
+	handle @api {
+		reverse_proxy localhost:3013
+	}
+	handle {
+		try_files {path} /index.html
+	}
+}
+
+crm.proyectos.cristiancode.dev {
+	encode gzip
+	root * /opt/data/repositorios/2026-06-24-crm/apps/web/dist/web/browser
+	file_server
+	@api path /api*
+	handle @api {
+		reverse_proxy localhost:3014
+	}
+	handle {
+		try_files {path} /index.html
+	}
+}
+
+recipes.proyectos.cristiancode.dev {
+	encode gzip
+	root * /opt/data/repositorios/2026-06-26-recipe-manager/apps/web/dist/web/browser
+	file_server
+	@api path /api*
+	handle @api {
+		reverse_proxy localhost:3015
+	}
+	handle {
+		try_files {path} /index.html
+	}
+}
+
+whisperer.proyectos.cristiancode.dev {
+	encode gzip
+	root * /opt/data/repositorios/2026-06-27-content-whisperer/apps/web/dist/web/browser
+	file_server
+	@api path /api*
+	handle @api {
+		reverse_proxy localhost:3016
+	}
+	handle {
+		try_files {path} /index.html
+	}
+}
+
+inventory.proyectos.cristiancode.dev {
+	encode gzip
+	root * /opt/data/repositorios/2026-06-28-inventory-manager/apps/web/dist/web/browser
+	file_server
+	@api path /api*
+	handle @api {
+		reverse_proxy localhost:3017
+	}
+	handle {
+		try_files {path} /index.html
+	}
+}
+
+workout.proyectos.cristiancode.dev {
+	encode gzip
+	root * /opt/data/repositorios/2026-06-30-workout-tracker/apps/web/dist/web/browser
+	file_server
+	@api path /api*
+	handle @api {
+		reverse_proxy localhost:3018
+	}
+	handle {
+		try_files {path} /index.html
+	}
+}
+
+social.proyectos.cristiancode.dev {
+	encode gzip
+	root * /opt/data/repositorios/2026-07-01-social-scheduler/apps/web/dist/social-scheduler-web/browser
+	file_server
+	@api path /api*
+	handle @api {
+		reverse_proxy localhost:3019
+	}
+	handle {
+		try_files {path} /index.html
+	}
+}
+
+code-review.proyectos.cristiancode.dev {
+	encode gzip
+	root * /opt/data/repositorios/2026-07-02-code-review-assistant/apps/web/dist/web/browser
+	file_server
+	@api path /api*
+	handle @api {
+		reverse_proxy localhost:3020
+	}
+	handle {
+		try_files {path} /index.html
+	}
+}
+
+helpdesk.proyectos.cristiancode.dev {
+	encode gzip
+	root * /opt/data/repositorios/2026-07-03-helpdesk/apps/web/dist/helpdesk-web/browser
+	file_server
+	@api path /api*
+	handle @api {
+		reverse_proxy localhost:3097
+	}
+	handle {
+		try_files {path} /index.html
+	}
+}
+
+time-tracker.proyectos.cristiancode.dev {
+	encode gzip
+	root * /opt/data/repositorios/2026-07-04-time-tracker/apps/web/dist/web-temp/browser
+	file_server
+	@api path /api*
+	handle @api {
+		reverse_proxy localhost:3098
+	}
+	handle {
+		try_files {path} /index.html
+	}
+}
+
+billing.proyectos.cristiancode.dev {
+	encode gzip
+	root * /opt/data/repositorios/2026-07-05-billing-portal/apps/web/dist/web/browser
+	file_server
+	@api path /api*
+	handle @api {
+		reverse_proxy localhost:3023
+	}
+	handle {
+		try_files {path} /index.html
+	}
+}
+
+survey-studio.proyectos.cristiancode.dev {
+	encode gzip
+	root * /opt/data/repositorios/2026-07-06-survey-studio/apps/web/dist/survey-studio-web/browser
+	file_server
+	@api path /api*
+	handle @api {
+		reverse_proxy localhost:3024
+	}
+	handle {
+		try_files {path} /index.html
+	}
+}
+
+wiki.proyectos.cristiancode.dev {
+	encode gzip
+	root * /opt/data/repositorios/2026-07-07-hermes-team-wiki/apps/web/dist/web-tmp/browser
+	file_server
+	@api path /api*
+	handle @api {
+		reverse_proxy localhost:3025
+	}
+	handle {
+		try_files {path} /index.html
+	}
+}
+
+jobs.proyectos.cristiancode.dev {
+	encode gzip
+	root * /opt/data/repositorios/2026-07-08-job-tracker/apps/web/dist/job-tracker-web/browser
+	file_server
+	@api path /api*
+	handle @api {
+		reverse_proxy localhost:3026
+	}
+	handle {
+		try_files {path} /index.html
+	}
+}
+
+landing.proyectos.cristiancode.dev {
+	encode gzip
+	root * /opt/data/repositorios/2026-07-09-landing-page-builder/apps/web/dist/landing-page-builder-web/browser
+	file_server
+	@api path /api*
+	handle @api {
+		reverse_proxy localhost:3027
+	}
+	handle {
+		try_files {path} /index.html
+	}
+}
+
+survey-engine.proyectos.cristiancode.dev {
+	encode gzip
+	root * /opt/data/repositorios/2026-07-10-survey-engine/apps/web/dist/web/browser
+	file_server
+	@api path /api*
+	handle @api {
+		reverse_proxy localhost:3028
+	}
+	handle {
+		try_files {path} /index.html
+	}
+}
+
+tasks.proyectos.cristiancode.dev {
+	encode gzip
+	root * /opt/data/repositorios/2026-07-11-task-manager/apps/web/dist/web/browser
+	file_server
+	@api path /api*
+	handle @api {
+		reverse_proxy localhost:3029
+	}
+	handle {
+		try_files {path} /index.html
+	}
+}
+
+entornos.proyectos.cristiancode.dev {
+	encode gzip
+	root * /opt/data/repositorios/entornos-desenvolvemento_2026-06-14
+	file_server
+}
+
+pomodoro.proyectos.cristiancode.dev {
+	encode gzip
+	root * /opt/data/repositorios/pomodoro-timer_2026-06-09
+	file_server
+}
+
+api-server.proyectos.cristiancode.dev {
+	encode gzip
+	reverse_proxy localhost:8080
+}
+
+# ── Nuevos (Jul 2026) ──────────────────────────────────
+
+habit-tracker.proyectos.cristiancode.dev {
+	encode gzip
+	root * /opt/data/repositorios/2026-07-21-habit-tracker/apps/web/dist/@habit-tracker/web/browser
+	file_server
+	@api path /api*
+	handle @api {
+		reverse_proxy localhost:3059
+	}
+	handle {
+		try_files {path} /index.html
+	}
+}
+
+skillbridge.proyectos.cristiancode.dev {
+	encode gzip
+	root * /opt/data/repositorios/2026-07-23-skillbridge/apps/web/dist/skillbridge-web/browser
+	file_server
+	@api path /api*
+	handle @api {
+		reverse_proxy localhost:3043
+	}
+	handle {
+		try_files {path} /index.html
+	}
+}
+
+reqlab.proyectos.cristiancode.dev {
+	encode gzip
+	root * /opt/data/repositorios/2026-07-24-req-lab/apps/web/dist/web/browser
+	file_server
+	@api path /api*
+	handle @api {
+		reverse_proxy localhost:3062
+	}
+	handle {
+		try_files {path} /index.html
+	}
+}
+
+riddlecraft.proyectos.cristiancode.dev {
+	encode gzip
+	root * /opt/data/repositorios/2026-07-25-riddlecraft/apps/web/dist/browser
+	file_server
+	@api path /api*
+	handle @api {
+		reverse_proxy localhost:3045
+	}
+	handle {
+		try_files {path} /index.html
+	}
+}
+
+daymark.proyectos.cristiancode.dev {
+	encode gzip
+	root * /opt/data/repositorios/2026-07-26-daymark/apps/web/dist/browser
+	file_server
+	@api path /api*
+	handle @api {
+		reverse_proxy localhost:3046
+	}
+	handle {
+		try_files {path} /index.html
+	}
+}
+
+tinytag.proyectos.cristiancode.dev {
+	encode gzip
+	root * /opt/data/repositorios/2026-07-28-tinytag/apps/web/dist/web/browser
+	file_server
+	@api path /api*
+	handle @api {
+		reverse_proxy localhost:3048
+	}
+	handle {
+		try_files {path} /index.html
+	}
+}
+
+goal-compass.proyectos.cristiancode.dev {
+	encode gzip
+	root * /opt/data/repositorios/2026-07-27-goal-compass/apps/web/dist/web/browser
+	file_server
+	@api path /api*
+	handle @api {
+		reverse_proxy localhost:3047
+	}
+	handle {
+		try_files {path} /index.html
+	}
+}
+
+sprintflow.proyectos.cristiancode.dev {
+	encode gzip
+	root * /opt/data/repositorios/2026-07-29-sprintflow/dist/apps/web/browser
+	file_server
+	@api path /api*
+	handle @api {
+		reverse_proxy localhost:3049
+	}
+	handle {
+		try_files {path} /index.html
+	}
+}
+
+deploy-gh.proyectos.cristiancode.dev {
+	encode gzip
+	reverse_proxy localhost:4870
+}
+
+landings.proyectos.cristiancode.dev {
+	encode gzip
+	root * /opt/data/landing-pages-refined
+	file_server
+}
+
+excel.proyectos.cristiancode.dev {
+	root * /opt/data
+	rewrite * /proyectos_completo.xlsx
+	file_server
+	header Content-Type "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+	header Content-Disposition "attachment; filename=proyectos_completo.xlsx"
+}
+
+readstack.proyectos.cristiancode.dev {
+	encode gzip
+	root * /opt/data/repositorios/2026-07-29-readstack/apps/web/dist/web/browser/browser
+	file_server
+	@api path /api*
+	handle @api {
+		reverse_proxy localhost:3030
+	}
+	handle {
+		try_files {path} /index.html
+	}
+}
+
+teampolls.proyectos.cristiancode.dev {
+	encode gzip
+	root * /opt/data/repositorios/2026-07-29-teampolls/apps/web/dist/teampolls-web/browser
+	file_server
+	@api path /api*
+	handle @api {
+		reverse_proxy localhost:3050
+	}
+	handle {
+		try_files {path} /index.html
+	}
+}
+
+huddle.proyectos.cristiancode.dev {
+	encode gzip
+	root * /opt/data/repositorios/2026-07-30-huddle/apps/web/dist/huddle-web/browser
+	file_server
+	@api path /api*
+	handle @api {
+		reverse_proxy localhost:3051
+	}
+	handle {
+		try_files {path} /index.html
+	}
+}
+
+quill.proyectos.cristiancode.dev {
+	encode gzip
+	root * /opt/data/repositorios/2026-07-31-quill/apps/web/dist/quill-web/browser
+	file_server
+	@api path /api*
+	handle @api {
+		reverse_proxy localhost:3052
+	}
+	handle {
+		try_files {path} /index.html
+	}
+}
+
+cardclash.proyectos.cristiancode.dev {
+	encode gzip
+	root * /opt/data/repositorios/2026-08-01-cardclash/apps/web/dist/cardclash-web/browser
+	file_server
+	@api path /api*
+	handle @api {
+		reverse_proxy localhost:3053
+	}
+	handle {
+		try_files {path} /index.html
+	}
+}
+
+slumber.proyectos.cristiancode.dev {
+	encode gzip
+	root * /opt/data/repositorios/2026-08-02-slumber/apps/web/dist/slumber-web/browser
+	file_server
+	@api path /api*
+	handle @api {
+		reverse_proxy localhost:3054
+	}
+	handle {
+		try_files {path} /index.html
+	}
+}
+
+leaseledger.proyectos.cristiancode.dev {
+	encode gzip
+	root * /opt/data/repositorios/2026-08-03-leaseledger/apps/web/dist/leaseledger-web/browser
+	file_server
+	@api path /api*
+	handle @api {
+		reverse_proxy localhost:3040
+	}
+	handle {
+		try_files {path} /index.html
+	}
+}
+
+doselog.proyectos.cristiancode.dev {
+	encode gzip
+	root * /opt/data/repositorios/2026-08-04-doselog/apps/web/dist/doselog-web/browser
+	file_server
+	@api path /api*
+	handle @api {
+		reverse_proxy localhost:3055
+	}
+	handle {
+		try_files {path} /index.html
+	}
+}
+
+widgetwall.proyectos.cristiancode.dev {
+	encode gzip
+	root * /opt/data/repositorios/2026-08-05-widgetwall/apps/web/dist/web/browser
+	file_server
+	@api path /api*
+	handle @api {
+		reverse_proxy localhost:3056
+	}
+	handle {
+		try_files {path} /index.html
+	}
+}
+
+mindlog.proyectos.cristiancode.dev {
+	encode gzip
+	root * /opt/data/repositorios/2026-08-07-mindlog/apps/web/dist/mindlog-web/browser
+	file_server
+	@api path /api*
+	handle @api {
+		reverse_proxy localhost:3041
+	}
+	handle {
+		try_files {path} /index.html
+	}
+}
+
+palette-vault.proyectos.cristiancode.dev {
+	encode gzip
+	root * /opt/data/repositorios/2026-08-07-palette-vault/apps/web/dist/web/browser
+	file_server
+	@api path /api*
+	handle @api {
+		reverse_proxy localhost:3042
+	}
+	handle {
+		try_files {path} /index.html
+	}
+}
+
+vitalscope.proyectos.cristiancode.dev {
+	encode gzip
+	root * /opt/data/repositorios/2026-08-09-vitalscope/apps/web/dist/web/browser
+	file_server
+	@api path /api*
+	handle @api {
+		reverse_proxy localhost:3060
+	}
+	handle {
+		try_files {path} /index.html
+	}
+}
+
+fleetkeeper.proyectos.cristiancode.dev {
+	encode gzip
+	root * /opt/data/repositorios/2026-08-10-fleetkeeper/apps/web/dist/web/browser
+	file_server
+	@api path /api*
+	handle @api {
+		reverse_proxy localhost:3044
+	}
+	handle {
+		try_files {path} /index.html
+	}
+}
+
+scanforge.proyectos.cristiancode.dev {
+	encode gzip
+	root * /opt/data/repositorios/2026-08-11-scanforge/apps/web/dist/web/browser
+	file_server
+	@api path /api*
+	handle @api {
+		reverse_proxy localhost:3061
+	}
+	handle {
+		try_files {path} /index.html
+	}
+}
+
+gridgauge.proyectos.cristiancode.dev {
+	encode gzip
+	root * /opt/data/repositorios/2026-08-12-gridgauge/apps/web/dist/web/browser
+	file_server
+	@api path /api*
+	handle @api {
+		reverse_proxy localhost:3057
+	}
+	handle {
+		try_files {path} /index.html
+	}
+}
+
+ridepals.proyectos.cristiancode.dev {
+	encode gzip
+	root * /opt/data/repositorios/2026-08-13-ridepals/apps/web/dist/web/browser
+	file_server
+	@api path /api*
+	handle @api {
+		reverse_proxy localhost:3058
+	}
+	handle {
+		try_files {path} /index.html
+	}
+}
+
+cinenova.proyectos.cristiancode.dev {
+	encode gzip
+	root * /opt/data/repositorios/2026-08-14-cinenova/apps/web/dist/web/browser
+	file_server
+	@api path /api*
+	handle @api {
+		reverse_proxy localhost:3063
+	}
+	handle {
+		try_files {path} /index.html
+	}
+}
+
+thrillville.proyectos.cristiancode.dev {
+	encode gzip
+	root * /opt/data/repositorios/2026-08-15-thrillville/apps/web/dist/web/browser
+	file_server
+	@api path /api*
+	handle @api {
+		reverse_proxy localhost:3064
+	}
+	handle {
+		try_files {path} /index.html
+	}
+}
+
+colmado.proyectos.cristiancode.dev {
+	encode gzip
+	root * /opt/data/repositorios/2026-08-16-colmado/apps/web/dist/web/browser
+	file_server
+	@api path /api*
+	handle @api {
+		reverse_proxy localhost:3065
+	}
+	handle {
+		try_files {path} /index.html
+	}
+}
+
+sabor-mesa.proyectos.cristiancode.dev {
+	encode gzip
+	root * /opt/data/repositorios/2026-08-17-sabor-mesa/apps/web/dist/web/browser
+	file_server
+	@api path /api*
+	handle @api {
+		reverse_proxy localhost:3067
+	}
+	handle {
+		try_files {path} /index.html
+	}
+}
+
+agora.proyectos.cristiancode.dev {
+	encode gzip
+	root * /opt/data/repositorios/2026-08-18-agora/apps/web/dist/web/browser
+	file_server
+	@api path /api*
+	handle @api {
+		reverse_proxy localhost:8971
+	}
+	handle {
+		try_files {path} /index.html
+	}
+}
+
+vitrina.proyectos.cristiancode.dev {
+	encode gzip
+	root * /opt/data/repositorios/2026-08-19-vitrina/apps/web/dist/web/browser
+	file_server
+	@api path /api*
+	handle @api {
+		reverse_proxy localhost:3066
+	}
+	handle {
+		try_files {path} /index.html
+	}
+}
+
+bolera.proyectos.cristiancode.dev {
+	encode gzip
+	root * /opt/data/repositorios/2026-08-20-bolera/apps/web/dist/web/browser
+	file_server
+	@api path /api*
+	handle @api {
+		reverse_proxy localhost:3069
+	}
+	handle {
+		try_files {path} /index.html
+	}
+}
+
+estribillo.proyectos.cristiancode.dev {
+	encode gzip
+	root * /opt/data/repositorios/2026-08-21-estribillo/apps/web/dist/web/browser
+	file_server
+	@api path /api*
+	handle @api {
+		reverse_proxy localhost:3070
+	}
+	handle {
+		try_files {path} /index.html
+	}
+}
+
+fulgor.proyectos.cristiancode.dev {
+	encode gzip
+	root * /opt/data/repositorios/2026-08-22-fulgor/apps/web/dist/web/browser
+	file_server
+	@api path /api*
+	handle @api {
+		reverse_proxy localhost:3071
+	}
+	handle {
+		try_files {path} /index.html
+	}
+}
+
+tempano.proyectos.cristiancode.dev {
+	encode gzip
+	root * /opt/data/repositorios/2026-08-23-tempano/apps/web/dist/web/browser
+	file_server
+	@api path /api*
+	handle @api {
+		reverse_proxy localhost:3072
+	}
+	handle {
+		try_files {path} /index.html
+	}
+}
+
+sextante.proyectos.cristiancode.dev {
+	encode gzip
+	root * /opt/data/repositorios/2026-08-24-sextante/apps/web/dist/web/browser
+	file_server
+	@api path /api*
+	handle @api {
+		reverse_proxy localhost:3073
+	}
+	handle {
+		try_files {path} /index.html
+	}
+}
+
+git.proyectos.cristiancode.dev {
+	encode gzip
+	reverse_proxy localhost:3000
+}

@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#101218">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="manifest" href="/manifest.json">
+<title>Status · proyectos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#101218; --ink:#e8e6df; --muted:#8b8d97; --faint:#5c5f6b;
+  --line:#2a2d36; --panel:#181b22; --panel-2:#1e222b;
+  --ok:#3dba7a; --warn:#d9a441; --bad:#e15a4f; --accent:#e8a317;
+  --focus:#7aa2ff; --pad:16px; --r:10px;
+  --safe-b: env(safe-area-inset-bottom, 0px);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{min-height:100%;background:var(--bg);color:var(--ink);
+  font-family:"IBM Plex Sans",ui-sans-serif,system-ui,sans-serif;
+  -webkit-font-smoothing:antialiased}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+a{color:var(--accent)}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.mono{font-family:"IBM Plex Mono",ui-monospace,monospace}
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block;flex-shrink:0;background:var(--faint)}
+.dot.green{background:var(--ok)}.dot.red{background:var(--bad)}.dot.yellow{background:var(--warn)}.dot.blue{background:var(--focus)}
+@keyframes pulse{50%{opacity:.35}}
+.pulse{animation:pulse 1.6s ease-in-out infinite}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+
+.app{display:grid;grid-template-rows:auto auto 1fr auto;min-height:100dvh}
+@media(min-width:960px){
+  .app{grid-template-columns:220px 1fr;grid-template-rows:auto 1fr auto}
+  .top{grid-column:1/-1}
+  .side{grid-row:2;align-self:stretch}
+  .main{grid-column:2;grid-row:2}
+  .foot{grid-column:1/-1}
+}
+
+.top{display:flex;align-items:center;gap:12px;padding:12px var(--pad);
+  border-bottom:1px solid var(--line);position:sticky;top:0;z-index:40;background:var(--bg)}
+.brand{display:flex;flex-direction:column;min-width:0}
+.brand h1{font-size:1.05rem;font-weight:650;letter-spacing:-.02em}
+.brand small{color:var(--muted);font-size:.75rem}
+.search{flex:1;min-width:0;position:relative}
+.search input{width:100%;background:var(--panel);border:1px solid var(--line);border-radius:8px;
+  padding:10px 12px 10px 34px;color:var(--ink)}
+.search input::placeholder{color:var(--faint)}
+.search kbd{position:absolute;right:8px;top:50%;transform:translateY(-50%);
+  font-size:10px;color:var(--faint);border:1px solid var(--line);border-radius:4px;padding:1px 5px}
+.search .ico{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--faint);font-size:14px}
+.live{display:flex;align-items:center;gap:6px;font-size:.75rem;color:var(--muted);white-space:nowrap}
+
+.side{display:none;padding:16px 12px;border-right:1px solid var(--line);background:var(--panel)}
+@media(min-width:960px){.side{display:flex;flex-direction:column;gap:4px}}
+.nav-btn{display:flex;align-items:center;justify-content:space-between;gap:8px;
+  width:100%;text-align:left;background:transparent;border:0;border-radius:8px;
+  padding:10px 12px;color:var(--muted);min-height:44px}
+.nav-btn[aria-current="page"],.nav-btn.active{background:var(--panel-2);color:var(--ink)}
+.nav-btn .n{font-variant-numeric:tabular-nums;color:var(--faint);font-size:.75rem}
+
+.tabs{display:flex;gap:6px;overflow-x:auto;padding:10px var(--pad) 0;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+@media(min-width:960px){.tabs{display:none}}
+.tabs button{flex:0 0 auto;min-height:40px;padding:8px 12px;border:1px solid var(--line);
+  background:var(--panel);border-radius:999px;color:var(--muted);font-size:.85rem}
+.tabs button.active{border-color:var(--accent);color:var(--ink)}
+
+.main{padding:14px var(--pad) 88px;display:flex;flex-direction:column;gap:18px}
+@media(min-width:960px){.main{padding:20px 24px 32px}}
+.section{display:none;flex-direction:column;gap:14px}
+.section.active{display:flex}
+.sec-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.sec-head h2{font-size:1.15rem;letter-spacing:-.02em;text-wrap:balance}
+.sec-head p{color:var(--muted);font-size:.85rem}
+
+.kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+@media(min-width:700px){.kpis{grid-template-columns:repeat(4,1fr)}}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;min-height:76px;cursor:pointer}
+.kpi .l{font-size:.75rem;color:var(--muted)}
+.kpi .v{font-size:1.35rem;font-weight:650;font-variant-numeric:tabular-nums;letter-spacing:-.03em;margin-top:2px}
+.kpi .s{font-size:.75rem;color:var(--faint);margin-top:2px}
+
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:14px}
+.panel h3{font-size:.95rem;font-weight:600;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center}
+.panel h3 .count{color:var(--muted);font-weight:500;font-variant-numeric:tabular-nums}
+.grid-2{display:grid;gap:12px}
+@media(min-width:800px){.grid-2{grid-template-columns:1fr 1fr}}
+
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{display:inline-flex;align-items:center;gap:6px;background:var(--panel-2);
+  border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:.85rem;max-width:100%}
+.chip b{font-weight:600}
+
+.row{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--line);font-size:.88rem}
+.row:last-child{border-bottom:0}
+.row .grow{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row .meta{color:var(--muted);font-size:.75rem;white-space:nowrap}
+.filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.filters button{min-height:36px;padding:6px 10px;border-radius:8px;border:1px solid var(--line);background:transparent;color:var(--muted);font-size:.8rem}
+.filters button.active{background:var(--panel-2);color:var(--ink)}
+.empty{color:var(--faint);font-size:.88rem;padding:16px 0;text-align:center}
+.hidden,.is-hidden{display:none!important}
+.hit mark{background:rgba(232,163,23,.25);color:inherit;border-radius:2px}
+
+.task-status,.badge{font-size:.7rem;padding:2px 6px;border-radius:4px;font-weight:600}
+.task-status.in_progress,.badge.ok{background:rgba(61,186,122,.15);color:var(--ok)}
+.task-status.pending,.badge.warn{background:rgba(217,164,65,.15);color:var(--warn)}
+.task-status.blocked,.badge.err{background:rgba(225,90,79,.15);color:var(--bad)}
+.agent-source-badge{font-size:.65rem;padding:2px 6px;border-radius:4px;font-weight:650;text-transform:uppercase}
+.agent-source-badge.slack{background:#4a154b40;color:#e07a9a}
+.agent-source-badge.telegram{background:#0088cc22;color:#5cbcf0}
+.agent-source-badge.cron{background:rgba(217,164,65,.15);color:var(--warn)}
+.agent-source-badge.cli{background:rgba(122,162,255,.15);color:var(--focus)}
+.sparkline{width:100%;height:48px;margin-top:8px}
+.banner{display:none;background:rgba(225,90,79,.12);border:1px solid rgba(225,90,79,.35);
+  color:var(--bad);border-radius:8px;padding:10px 12px;font-size:.85rem}
+.banner.show{display:block}
+
+.dock{position:fixed;bottom:0;left:0;right:0;display:flex;justify-content:space-around;
+  background:var(--panel);border-top:1px solid var(--line);padding:6px 4px var(--safe-b);z-index:50}
+@media(min-width:960px){.dock{display:none}}
+.dock button{flex:1;background:0;border:0;color:var(--muted);font-size:.65rem;padding:6px 2px;min-height:48px}
+.dock button.active{color:var(--ink)}
+.dock .ico{display:block;font-size:16px;margin-bottom:2px}
+
+.foot{display:none}
+@media(min-width:960px){
+  .foot{display:block;border-top:1px solid var(--line);padding:8px 24px;color:var(--faint);font-size:.75rem}
+}
+
+#toastContainer{position:fixed;top:12px;right:12px;z-index:80;display:flex;flex-direction:column;gap:6px;max-width:min(360px,92vw);pointer-events:none}
+.toast{padding:10px 12px;border-radius:8px;font-size:.82rem;background:var(--panel-2);border:1px solid var(--line);pointer-events:auto}
+.toast.working{border-color:rgba(61,186,122,.4)}
+.toast.ended{border-color:rgba(225,90,79,.4)}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="brand">
+      <h1>Status</h1>
+      <small>proyectos.cristiancode.dev</small>
+    </div>
+    <div class="search">
+      <span class="ico" aria-hidden="true">⌕</span>
+      <input id="q" type="search" placeholder="Buscar crons, procesos, sesiones, puertos…" autocomplete="off" enterkeyhint="search">
+      <kbd>/</kbd>
+    </div>
+    <div class="live"><span class="dot green pulse" id="connDot"></span><span id="connStatus">Conectando</span></div>
+  </header>
+
+  <nav class="side" aria-label="Secciones">
+    <button class="nav-btn active" data-go="overview">Resumen <span class="n" id="nOverview"></span></button>
+    <button class="nav-btn" data-go="platforms">Plataformas <span class="n" id="nPlat"></span></button>
+    <button class="nav-btn" data-go="jobs">Crons <span class="n" id="nJobs"></span></button>
+    <button class="nav-btn" data-go="work">Trabajo <span class="n" id="nWork"></span></button>
+    <button class="nav-btn" data-go="net">Red <span class="n" id="nNet"></span></button>
+    <button class="nav-btn" data-go="sys">Sistema <span class="n" id="nSys"></span></button>
+  </nav>
+
+  <div class="tabs" id="tabs">
+    <button class="active" data-go="overview">Resumen</button>
+    <button data-go="platforms">Plataformas</button>
+    <button data-go="jobs">Crons</button>
+    <button data-go="work">Trabajo</button>
+    <button data-go="net">Red</button>
+    <button data-go="sys">Sistema</button>
+  </div>
+
+  <main class="main">
+    <div class="banner" id="errorBanner"></div>
+
+    <section class="section active" id="sec-overview">
+      <div class="sec-head">
+        <h2>Resumen</h2>
+        <p id="lastUpdate">Conectando…</p>
+      </div>
+      <div class="kpis">
+        <div class="kpi" data-go="platforms"><div class="l">Gateway</div><div class="v" id="sGateway">—</div><div class="s" id="sGatewaySub">—</div></div>
+        <div class="kpi" data-go="work"><div class="l">Sesiones</div><div class="v" id="sSessions">0</div><div class="s">activas</div></div>
+        <div class="kpi" data-go="work"><div class="l">Agentes</div><div class="v" id="sAgents">0</div><div class="s" id="sAgentsSub">—</div></div>
+        <div class="kpi" data-go="work"><div class="l">Tareas</div><div class="v" id="sTasks">0</div><div class="s">kanban</div></div>
+        <div class="kpi" data-go="net"><div class="l">Socats</div><div class="v" id="sSocats">—</div><div class="s" id="sSocatsSub">—</div></div>
+        <div class="kpi" data-go="jobs"><div class="l">Crons</div><div class="v" id="sCrons">0</div><div class="s">jobs</div></div>
+        <div class="kpi" data-go="sys"><div class="l">Load 1m</div><div class="v" id="sLoad">—</div><div class="s">sistema</div></div>
+        <div class="kpi" data-go="sys"><div class="l">Uptime</div><div class="v" id="sUptime">—</div><div class="s">servidor</div></div>
+      </div>
+      <div class="panel" id="gatewaySection">
+        <h3>Gateway default <span class="count" id="gatewayState">—</span></h3>
+        <div class="chips" id="gatewayInfo"></div>
+      </div>
+    </section>
+
+    <section class="section" id="sec-platforms">
+      <div class="sec-head"><h2>Plataformas</h2><p>Telegram vive en cpp-developer; Slack en default.</p></div>
+      <div class="panel">
+        <h3>Conectores</h3>
+        <div class="chips" id="platformDetail"></div>
+      </div>
+      <div class="panel">
+        <h3>Perfiles <span class="count" id="profileCount">0</span></h3>
+        <div id="profileList"></div>
+      </div>
+    </section>
+
+    <section class="section" id="sec-jobs">
+      <div class="sec-head"><h2>Crons</h2><p>Filtra por tipo o escribe en la búsqueda.</p></div>
+      <div class="panel" id="cronSection">
+        <h3>Jobs <span class="count" id="cronCount">0</span></h3>
+        <div class="filters" id="cronFilters">
+          <button class="active" data-cron="all">Todos</button>
+          <button data-cron="daily">Diarios</button>
+          <button data-cron="weekly">Semanales</button>
+          <button data-cron="err">Error</button>
+        </div>
+        <div id="cronDailySection"><div class="cron-jobs" id="cronDailyList"></div></div>
+        <div id="cronWeeklySection"><div class="cron-jobs" id="cronWeeklyList"></div></div>
+        <span class="hidden" id="cronDailyCount">0</span>
+        <span class="hidden" id="cronWeeklyCount">0</span>
+      </div>
+    </section>
+
+    <section class="section" id="sec-work">
+      <div class="sec-head"><h2>Trabajo en curso</h2><p>Agentes, sesiones, tareas y eventos.</p></div>
+      <div class="panel" id="agentSection">
+        <h3>Agentes <span class="count" id="agentCount">0</span></h3>
+        <div id="agentTree"><div class="empty">Sin agentes</div></div>
+      </div>
+      <div class="grid-2">
+        <div class="panel" id="sessionSection">
+          <h3>Sesiones <span class="count" id="sessionCount">0</span></h3>
+          <div id="sessionList"><div class="empty">Sin sesiones</div></div>
+        </div>
+        <div class="panel" id="taskSection">
+          <h3>Tareas <span class="count" id="taskCount">0</span></h3>
+          <div id="taskList"><div class="empty">Sin tareas</div></div>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="panel" id="toolsSection">
+          <h3>Tools <span class="count" id="toolCallCount">0</span></h3>
+          <div id="toolCallList"><div class="empty">Sin tools</div></div>
+        </div>
+        <div class="panel" id="eventSection">
+          <h3>Eventos <span class="count" id="eventCount">0</span></h3>
+          <div id="eventList"><div class="empty">Sin eventos</div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="sec-net">
+      <div class="sec-head"><h2>Red</h2><p>Forwards y procesos observados.</p></div>
+      <div class="panel" id="socatSection">
+        <h3>Socats <span class="count" id="socatStatus">—</span></h3>
+        <div id="socatList"><div class="empty">Comprobando…</div></div>
+      </div>
+      <div class="panel" id="procSection">
+        <h3>Procesos <span class="count" id="procCount">0</span></h3>
+        <div id="procList"><div class="empty">Sin procesos</div></div>
+      </div>
+    </section>
+
+    <section class="section" id="sec-sys">
+      <div class="sec-head"><h2>Sistema</h2><p>Carga, memoria y workers.</p></div>
+      <div class="panel" id="systemSection">
+        <h3>Host</h3>
+        <div class="chips" id="systemInfo"></div>
+        <canvas id="loadSparkline" class="sparkline" width="640" height="48"></canvas>
+      </div>
+      <div class="panel" id="workerSection">
+        <h3>Workers <span class="count" id="workerCount">0</span></h3>
+        <div id="workerList"><div class="empty">Sin workers</div></div>
+      </div>
+    </section>
+  </main>
+
+  <nav class="dock" id="bottomNav">
+    <button class="active" data-go="overview"><span class="ico">▣</span>Resumen</button>
+    <button data-go="platforms"><span class="ico">◎</span>Plataf.</button>
+    <button data-go="jobs"><span class="ico">◷</span>Crons</button>
+    <button data-go="work"><span class="ico">◈</span>Trabajo</button>
+    <button data-go="net"><span class="ico">⇄</span>Red</button>
+    <button data-go="sys"><span class="ico">⚙</span>Sys</button>
+  </nav>
+  <footer class="foot" id="footMeta">Status · refresco ~3s</footer>
+</div>
+<div id="toastContainer"></div>
+
+<script>
+const WS_URL = `${location.protocol === 'https:' ? 'wss:' : 'ws:'}//${location.host}/ws`;
+let ws = null, reconnTimer = null, LAST = null, CRON_FILTER = 'all';
+
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.toggle('active', s.id === 'sec-' + id));
+  document.querySelectorAll('[data-go]').forEach(b => b.classList.toggle('active', b.dataset.go === id));
+  document.querySelectorAll('.side .nav-btn').forEach(b => b.setAttribute('aria-current', b.dataset.go === id ? 'page' : 'false'));
+  history.replaceState(null, '', '#' + id);
+  window.scrollTo({top:0, behavior:'instant' in document.documentElement.style ? 'instant' : 'auto'});
+}
+document.querySelectorAll('[data-go]').forEach(el => {
+  el.addEventListener('click', () => showSection(el.dataset.go));
+});
+if (location.hash.slice(1)) showSection(location.hash.slice(1));
+
+function connect() {
+  const dot = document.getElementById('connDot');
+  const status = document.getElementById('connStatus');
+  dot.className = 'dot yellow pulse';
+  status.textContent = 'Conectando…';
+  ws = new WebSocket(WS_URL);
+  ws.onopen = () => { dot.className = 'dot green pulse'; status.textContent = 'En vivo'; hideError(); };
+  ws.onmessage = e => { try { const msg = JSON.parse(e.data); if (msg.type === 'snapshot') render(msg.data); } catch (err) { console.error(err); } };
+  ws.onclose = () => { dot.className = 'dot red'; status.textContent = 'Caído'; showError('Sin WebSocket — reintento…'); reconnTimer = setTimeout(connect, 2000); };
+  ws.onerror = () => { dot.className = 'dot red'; status.textContent = 'Error'; };
+}
+function showError(msg) { const el = document.getElementById('errorBanner'); el.textContent = msg; el.classList.add('show'); }
+function hideError() { document.getElementById('errorBanner').classList.remove('show'); }
+
+function fmtTime(ts) {
+  if (!ts) return '—';
+  const d = typeof ts === 'number' ? new Date(ts * 1000) : new Date(ts);
+  if (isNaN(d.getTime())) return '—';
+  const pad = n => String(n).padStart(2, '0');
+  return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+}
+function fmtUptime(secs) {
+  if (!secs && secs !== 0) return '—';
+  const h = Math.floor(secs / 3600), m = Math.floor((secs % 3600) / 60), s = Math.floor(secs % 60);
+  if (h > 24) return `${Math.floor(h/24)}d ${h%24}h`;
+  if (h > 0) return `${h}h ${m}m`;
+  if (m > 0) return `${m}m ${s}s`;
+  return `${s}s`;
+}
+function fmtAgo(ts) {
+  if (!ts) return '—';
+  const t = typeof ts === 'number' ? ts : new Date(ts).getTime() / 1000;
+  const diff = Date.now() / 1000 - t;
+  if (diff < 60) return 'ahora';
+  if (diff < 3600) return `${Math.floor(diff/60)}m`;
+  if (diff < 86400) return `${Math.floor(diff/3600)}h`;
+  return `${Math.floor(diff/86400)}d`;
+}
+function esc(s) { if (!s) return ''; const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+function platChip(name, p) {
+  p = p || {};
+  const ok = p.state === 'connected';
+  const off = p.state === 'disabled' || p.error_code === 'missing_credentials';
+  const label = ok ? (p.delegated_to ? `OK · ${p.delegated_to}` : 'OK')
+    : (off ? (p.error_message || 'off') : (p.error_message || 'DOWN'));
+  const color = ok ? 'var(--ok)' : (off ? 'var(--muted)' : 'var(--bad)');
+  const dot = ok ? 'green' : (off ? '' : 'red');
+  return `<div class="chip searchable" data-q="${esc(name+' '+label)}"><span class="dot ${dot}"></span><b>${esc(name)}</b> <span style="color:${color}">${esc(label)}</span></div>`;
+}
+
+function applySearch() {
+  const q = (document.getElementById('q').value || '').trim().toLowerCase();
+  document.querySelectorAll('.searchable').forEach(el => {
+    const hay = (el.dataset.q || el.textContent || '').toLowerCase();
+    el.classList.toggle('is-hidden', q && !hay.includes(q));
+  });
+  applyCronFilter();
+}
+function applyCronFilter() {
+  const daily = document.getElementById('cronDailySection');
+  const weekly = document.getElementById('cronWeeklySection');
+  if (CRON_FILTER === 'weekly') { daily.classList.add('hidden'); weekly.classList.remove('hidden'); }
+  else if (CRON_FILTER === 'daily') { daily.classList.remove('hidden'); weekly.classList.add('hidden'); }
+  else { daily.classList.remove('hidden'); weekly.classList.remove('hidden'); }
+  if (CRON_FILTER === 'err') {
+    document.querySelectorAll('.cron-job').forEach(el => {
+      if (!el.classList.contains('is-err')) el.classList.add('is-hidden');
+    });
+  }
+}
+
+document.getElementById('q').addEventListener('input', applySearch);
+document.addEventListener('keydown', e => {
+  if (e.key === '/' && e.target.tagName !== 'INPUT') { e.preventDefault(); document.getElementById('q').focus(); }
+  if (e.key === 'Escape') { document.getElementById('q').blur(); document.getElementById('q').value=''; applySearch(); }
+});
+document.getElementById('cronFilters').addEventListener('click', e => {
+  const b = e.target.closest('button[data-cron]');
+  if (!b) return;
+  CRON_FILTER = b.dataset.cron;
+  document.querySelectorAll('#cronFilters button').forEach(x => x.classList.toggle('active', x === b));
+  applySearch();
+});
+
+function showNotification(title, message) {
+  showToast('⚠', title, message, 'ended');
+}
+
+function render(data) {
+  LAST = data;
+  document.getElementById('lastUpdate').textContent = data.datetime ? new Date(data.datetime).toLocaleString('es-ES') : '—';
+  document.getElementById('footMeta').textContent = `Actualizado ${data.datetime || '—'} · WS ${location.host}`;
+
+  const gw = data.gateway || {};
+  const stateEl = document.getElementById('gatewayState');
+  stateEl.textContent = gw.state === 'running' ? 'running' : (gw.state || '?');
+  stateEl.style.color = gw.state === 'running' ? 'var(--ok)' : 'var(--bad)';
+  const platforms = gw.platforms || {};
+  const platChips = Object.entries(platforms).map(([n,p]) => platChip(n,p)).join('');
+  document.getElementById('gatewayInfo').innerHTML = `
+    <div class="chip"><b>PID</b> <span class="mono">${gw.pid || '?'}</span></div>
+    <div class="chip"><b>Agentes</b> ${gw.active_agents ?? '?'}</div>
+    <div class="chip"><b>Uptime</b> ${fmtUptime(gw.uptime_seconds)}</div>
+    ${platChips}`;
+  document.getElementById('platformDetail').innerHTML = platChips || '<div class="empty">Sin plataformas</div>';
+
+  const profiles = gw.profiles || {};
+  const pnames = Object.keys(profiles);
+  document.getElementById('profileCount').textContent = pnames.length;
+  document.getElementById('nPlat').textContent = pnames.length || '';
+  document.getElementById('profileList').innerHTML = pnames.length
+    ? pnames.map(name => {
+        const p = profiles[name] || {};
+        const plats = p.platforms || {};
+        const bits = Object.entries(plats).map(([n,st]) => platChip(n, st)).join('');
+        return `<div class="row searchable" data-q="${esc(name)}"><span class="dot ${p.state==='running'?'green':'red'}"></span>
+          <span class="grow"><b>${esc(name)}</b> <span class="meta">${esc(p.state||'?')} · pid ${p.pid||'—'}</span></span></div>
+          ${bits ? `<div style="padding:0 0 10px 18px" class="chips">${bits}</div>` : ''}`;
+      }).join('')
+    : '<div class="empty">Sin perfiles</div>';
+
+  const sys = data.system || {};
+  document.getElementById('systemInfo').innerHTML = sys.load_1m != null ? `
+    <div class="chip"><b>Load</b> ${sys.load_1m}</div>
+    <div class="chip"><b>Mem</b> ${sys.memory ? Math.round((sys.memory.total_kb - sys.memory.available_kb) / sys.memory.total_kb * 100) + '%' : '?'}</div>
+    <div class="chip"><b>Procs</b> ${sys.process_count ?? '?'}</div>
+    <div class="chip"><b>Uptime</b> ${fmtUptime(sys.uptime_seconds)}</div>`
+    : '<div class="empty">Sin datos</div>';
+
+  const sessions = data.sessions || [];
+  document.getElementById('sessionCount').textContent = sessions.length;
+  document.getElementById('sessionList').innerHTML = sessions.length
+    ? sessions.slice(0, 16).map(s => `
+      <div class="row searchable" data-q="${esc((s.title||'')+' '+(s.source||'')+' '+(s.model||''))}">
+        <div class="grow">
+          <div>${esc(s.title || s.id?.slice(0,12) || 'Sesión')}</div>
+          <div class="meta">${esc(s.source || '?')} · ${s.message_count??0} msg · ${s.tool_call_count??0} tools · ${fmtTime(s.started_at)} · ${esc(s.model||'')}</div>
+        </div>
+      </div>`).join('')
+    : '<div class="empty">Sin sesiones</div>';
+
+  const kanban = data.kanban || {};
+  const tasks = kanban.tasks || [];
+  const links = kanban.links || [];
+  document.getElementById('taskCount').textContent = tasks.length;
+  const childMap = {};
+  links.forEach(l => { if (!childMap[l.parent_id]) childMap[l.parent_id] = []; childMap[l.parent_id].push(l.child_id); });
+  const childIds = new Set(links.map(l => l.child_id));
+  const parentTasks = tasks.filter(t => !childIds.has(t.id));
+  const allTaskIds = new Set(tasks.map(t => t.id));
+  document.getElementById('taskList').innerHTML = tasks.length
+    ? parentTasks.slice(0, 16).map(t => {
+        const subs = (childMap[t.id] || []).filter(sid => allTaskIds.has(sid));
+        const st = t.status || 'pending';
+        return `<div class="row searchable" data-q="${esc((t.title||'')+' '+st+' '+(t.assignee||''))}">
+          <span class="dot ${t.worker_alive ? 'green' : t.worker_alive === false ? 'red' : 'yellow'}"></span>
+          <div class="grow"><div>${esc(t.title || 'Untitled')}</div>
+            <div class="meta">${t.assignee?esc(t.assignee)+' · ':''}${t.priority?esc(t.priority)+' · ':''}${fmtAgo(t.last_heartbeat_at)}</div>
+            ${subs.length ? `<div class="meta">${subs.map(sid => { const sub = tasks.find(x => x.id === sid); return sub ? esc(sub.title)+' ['+(sub.status||'?')+']' : ''; }).join(' · ')}</div>` : ''}
+          </div>
+          <span class="task-status ${st}">${st}</span>
+        </div>`;
+      }).join('')
+    : '<div class="empty">Sin tareas</div>';
+
+  const procs = data.processes || [];
+  document.getElementById('procCount').textContent = procs.length;
+  document.getElementById('procList').innerHTML = procs.length
+    ? procs.map(p => `
+      <div class="row searchable" data-q="${esc((p.command||'')+' '+p.pid)}">
+        <span class="dot green"></span>
+        <span class="meta mono">${p.pid}</span>
+        <span class="grow" title="${esc(p.command)}">${esc(p.command?.slice(0, 90) || '?')}</span>
+        <span class="meta">${fmtUptime(p.uptime_seconds)}</span>
+      </div>`).join('')
+    : '<div class="empty">Sin procesos</div>';
+
+  const socats = data.socats || {};
+  const forwards = socats.forwards || {};
+  const allUp = socats.all_up !== false;
+  const socatDot = document.getElementById('socatStatus');
+  if (socatDot) { socatDot.textContent = allUp ? 'todo OK' : 'caídos'; socatDot.style.color = allUp ? 'var(--ok)' : 'var(--bad)'; }
+  if (!allUp && window._socatsWereUp !== false) {
+    const downPorts = Object.entries(forwards).filter(([_, v]) => v === 'down').map(([k]) => k);
+    showNotification('Socat caído', 'Down: ' + downPorts.join(', '));
+  }
+  window._socatsWereUp = allUp;
+  document.getElementById('socatList').innerHTML = Object.keys(forwards).length
+    ? Object.entries(forwards).map(([name, status]) => `
+      <div class="row searchable" data-q="${esc(name+' '+status)}">
+        <span class="dot ${status==='up'?'green':'red'}"></span>
+        <span class="grow">${esc(name)}</span>
+        <span class="meta" style="color:${status==='up'?'var(--ok)':'var(--bad)'}">${status==='up'?'UP':'DOWN'}</span>
+      </div>`).join('')
+    : '<div class="empty">Sin datos socat</div>';
+
+  const tree = data.agent_tree || {};
+  const roots = tree.roots || [];
+  const orphans = tree.orphan_tasks || [];
+  const taskLinks = tree.task_links || [];
+  const allTasks = tree.all_tasks || {};
+  document.getElementById('agentCount').textContent = roots.length + (orphans.length ? ` +${orphans.length}` : '');
+  const subTaskMap = {};
+  taskLinks.forEach(l => { if (!subTaskMap[l.parent_id]) subTaskMap[l.parent_id] = []; subTaskMap[l.parent_id].push(l.child_id); });
+  function renderTask(task) {
+    const st = task.status || 'pending';
+    const subs = (subTaskMap[task.id] || []).filter(sid => allTasks[sid] || false);
+    return `<div class="row searchable" data-q="${esc(task.title||'')}">
+      <span class="dot ${task.worker_alive ? 'green' : task.worker_alive === false ? 'red' : 'yellow'}"></span>
+      <span class="grow">${esc(task.title || 'Untitled')}</span>
+      <span class="task-status ${st}">${st}</span>
+    </div>` + (subs.length ? subs.map(sid => {
+      const sub = allTasks[sid];
+      return sub ? `<div class="row searchable" data-q="${esc(sub.title||'')}" style="padding-left:22px"><span class="grow">${esc(sub.title)}</span><span class="task-status ${sub.status||'pending'}">${sub.status||'?'}</span></div>` : '';
+    }).join('') : '');
+  }
+  function fmtTokenCount(n) { if (!n) return '0'; if (n >= 1000000) return (n/1000000).toFixed(1)+'M'; if (n >= 1000) return (n/1000).toFixed(1)+'K'; return String(n); }
+  document.getElementById('agentTree').innerHTML = roots.length
+    ? roots.map((r, i) => {
+        const s = r.session || {};
+        const src = s.source || '?';
+        const childSessions = r.child_sessions || [];
+        const atasks = r.tasks || [];
+        const totalMsgs = (s.message_count || 0) + childSessions.reduce((sum, c) => sum + (c.message_count || 0), 0);
+        const totalTools = (s.tool_call_count || 0) + childSessions.reduce((sum, c) => sum + (c.tool_call_count || 0), 0);
+        const isActive = s.last_activity_seconds_ago < 120;
+        const lastActStr = s.last_activity_seconds_ago < 10 ? 'ahora' : fmtUptime(s.last_activity_seconds_ago);
+        return `<div class="searchable" data-q="${esc((s.title||'')+' '+src+' '+(s.model||''))}">
+          <div class="row" onclick="toggleAgentRoot(this)" style="cursor:pointer">
+            <span class="agent-source-badge ${src}">${src}</span>
+            <span class="grow"><b>${esc(s.title || s.id?.slice(0,16) || 'Agent')}</b></span>
+            <span class="meta">${totalMsgs} msg · ${totalTools} tools · ${lastActStr}</span>
+            <span class="dot ${isActive?'green':'yellow'}"></span>
+          </div>
+          <div class="agent-children">
+            <div class="meta" style="padding:4px 0">${esc((s.model||'').split('/').pop())} · ${fmtTokenCount(s.total_tokens)} tok</div>
+            ${atasks.map(t => renderTask(t)).join('')}
+            ${childSessions.map(c => `<div class="row searchable" data-q="${esc(c.title||'')}"><span class="dot ${c.last_activity_seconds_ago<120?'green':'blue'}"></span><span class="grow">${esc(c.title||'Sub')}</span><span class="meta">${c.message_count||0} msg</span></div>`).join('')}
+          </div>
+        </div>`;
+      }).join('') + (orphans.length ? `<div class="meta">${orphans.length} orphan task(s)</div>` : '')
+    : '<div class="empty">Sin agentes</div>';
+
+  const workers = data.workers || [];
+  document.getElementById('workerCount').textContent = workers.length;
+  document.getElementById('workerList').innerHTML = workers.length
+    ? workers.map(w => {
+        const rss = w.rss_kb >= 1024 ? (w.rss_kb/1024).toFixed(1)+' MB' : w.rss_kb+' KB';
+        return `<div class="row searchable" data-q="${esc((w.command||'')+' '+w.pid)}">
+          <span class="dot green"></span>
+          <span class="meta mono">${w.pid}</span>
+          <span class="grow">${esc((w.command||'').slice(0,80))}</span>
+          <span class="meta">${rss}</span>
+        </div>`;
+      }).join('')
+    : '<div class="empty">Sin workers</div>';
+
+  const toolCalls = tree.recent_tool_calls || [];
+  document.getElementById('toolCallCount').textContent = toolCalls.length;
+  document.getElementById('toolCallList').innerHTML = toolCalls.length
+    ? toolCalls.map(tc => `<div class="row searchable" data-q="${esc(tc.tool_name||'')}">
+        <span class="grow">${esc(tc.tool_name || '?')} <span class="meta">${esc(tc.role||'')}</span></span>
+        <span class="meta">${fmtTime(tc.timestamp)}</span>
+      </div>`).join('')
+    : '<div class="empty">Sin tools</div>';
+
+  const events = data.events || [];
+  const eventHistory = data.event_history || [];
+  document.getElementById('eventCount').textContent = eventHistory.length;
+  events.forEach(ev => {
+    const icons = {agent_started:'→',agent_working:'•',agent_idle:'○',agent_ended:'×',tool_milestone:'⚙'};
+    const classes = {agent_started:'started',agent_working:'working',agent_idle:'idle',agent_ended:'ended',tool_milestone:'working'};
+    showToast(icons[ev.kind] || '·', ev.title, ev.detail, classes[ev.kind] || '');
+  });
+  document.getElementById('eventList').innerHTML = eventHistory.length
+    ? eventHistory.map(ev => `<div class="row searchable" data-q="${esc((ev.title||'')+' '+(ev.detail||'')+' '+(ev.source||''))}">
+        <div class="grow"><div>${esc(ev.title)}</div><div class="meta">${esc(ev.detail)} · ${esc(ev.source)}</div></div>
+        <span class="meta">${fmtTime(ev.timestamp)}</span>
+      </div>`).join('')
+    : '<div class="empty">Sin eventos</div>';
+
+  const cronData = data.cron_files || {};
+  const jobs = cronData.jobs || [];
+  const now = new Date();
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime() / 1000;
+  const dayOfWeek = now.getDay();
+  const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+  const weekStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() + mondayOffset).getTime() / 1000;
+  function parseCronExpr(expr) {
+    if (!expr || typeof expr !== 'string') return null;
+    const parts = expr.trim().split(/\s+/);
+    if (parts.length < 5) return null;
+    return { minute: parts[0], hour: parts[1], dom: parts[2], month: parts[3], dow: parts[4] };
+  }
+  function fmtCronTime(expr) {
+    const c = parseCronExpr(expr);
+    if (!c) return expr || '—';
+    const h = c.hour, m = c.minute;
+    if (h === '*') return `*:${m}`;
+    if (m === '*') return `${h}:*`;
+    if (h.includes(',')) return h.split(',').map(x => `${x.padStart(2,'0')}:${m.padStart(2,'0')}`).join(', ');
+    return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+  }
+  function isDailyJob(schedule) {
+    if (!schedule) return false;
+    const expr = schedule.expr || schedule.display || '';
+    const c = parseCronExpr(expr);
+    if (!c) return schedule.kind === 'interval';
+    return c.dow === '*';
+  }
+  function isWeeklyJob(schedule) {
+    if (!schedule) return false;
+    const expr = schedule.expr || schedule.display || '';
+    const c = parseCronExpr(expr);
+    if (!c) return false;
+    return !(c.dow === '*' || c.dow === '?');
+  }
+  function fmtDow(dow) {
+    const days = {0:'dom',1:'lun',2:'mar',3:'mié',4:'jue',5:'vie',6:'sáb',7:'dom'};
+    if (!dow || dow === '*') return '';
+    if (dow.includes(',')) return dow.split(',').map(d => days[d]||d).join(',');
+    if (dow.includes('-')) { const [s,e] = dow.split('-'); return (days[s]||s)+'–'+(days[e]||e); }
+    return days[dow] || dow;
+  }
+  document.getElementById('sCrons').textContent = jobs.length;
+  document.getElementById('cronCount').textContent = jobs.length;
+  document.getElementById('nJobs').textContent = jobs.length || '';
+  const dailyJobs = jobs.filter(j => isDailyJob(j.schedule));
+  const weeklyJobs = jobs.filter(j => isWeeklyJob(j.schedule));
+  document.getElementById('cronDailyCount').textContent = dailyJobs.length;
+  document.getElementById('cronWeeklyCount').textContent = weeklyJobs.length;
+  function renderCronJob(job) {
+    const schedule = job.schedule || {};
+    const expr = schedule.expr || schedule.display || '';
+    const timeStr = fmtCronTime(expr);
+    const lastRun = job.last_run_at ? new Date(job.last_run_at).getTime() / 1000 : null;
+    const lastRunTs = job.output_mtime || lastRun;
+    const isRunning = job.state === 'running' || (lastRunTs && (now.getTime()/1000 - lastRunTs) < 120);
+    const isWeekly = isWeeklyJob(job.schedule);
+    const isToday = lastRunTs && lastRunTs >= todayStart;
+    const isThisWeek = lastRunTs && lastRunTs >= weekStart;
+    let statusText = 'pendiente', statusClass = '';
+    if (isRunning) { statusText = 'running'; statusClass = 'ok'; }
+    else if (isWeekly) { statusText = isThisWeek ? 'esta semana' : 'pendiente'; statusClass = isThisWeek ? 'ok' : ''; }
+    else { statusText = isToday ? 'hoy' : 'pendiente'; statusClass = isToday ? 'ok' : ''; }
+    if (job.last_status === 'error') statusClass = 'err';
+    const extra = isWeekly && expr ? fmtDow(parseCronExpr(expr)?.dow) : '';
+    const q = (job.name||'')+' '+(job.id||'')+' '+timeStr+' '+statusText;
+    return `<div class="row cron-job searchable ${job.last_status==='error'?'is-err':''}" data-q="${esc(q)}">
+      <span class="grow"><b>${esc(job.name || job.id || '?')}</b>
+        <div class="meta mono">${esc(timeStr)}${extra?' · '+extra:''} · ${lastRunTs?fmtTime(lastRunTs):'nunca'}</div>
+      </span>
+      <span class="badge ${statusClass||'warn'}">${esc(statusText)}</span>
+    </div>`;
+  }
+  document.getElementById('cronDailyList').innerHTML = dailyJobs.length ? dailyJobs.map(renderCronJob).join('') : '<div class="empty">Sin diarios</div>';
+  document.getElementById('cronWeeklyList').innerHTML = weeklyJobs.length ? weeklyJobs.map(renderCronJob).join('') : '<div class="empty">Sin semanales</div>';
+
+  document.getElementById('sGateway').textContent = gw.state === 'running' ? 'UP' : '?';
+  document.getElementById('sGateway').style.color = gw.state === 'running' ? 'var(--ok)' : 'var(--bad)';
+  document.getElementById('sGatewaySub').textContent = gw.active_agents != null ? `${gw.active_agents} agentes` : (gw.state || '?');
+  document.getElementById('sSessions').textContent = sessions.length;
+  document.getElementById('sTasks').textContent = tasks.length;
+  document.getElementById('sAgents').textContent = roots.length;
+  document.getElementById('sAgentsSub').textContent = orphans.length ? `+${orphans.length} orphan` : 'raíces';
+  document.getElementById('sSocats').textContent = allUp ? 'OK' : 'DOWN';
+  document.getElementById('sSocats').style.color = allUp ? 'var(--ok)' : 'var(--bad)';
+  document.getElementById('sSocatsSub').textContent = Object.keys(forwards).length + ' forwards';
+  document.getElementById('sLoad').textContent = sys.load_1m != null ? sys.load_1m : '—';
+  document.getElementById('sUptime').textContent = fmtUptime(sys.uptime_seconds);
+  document.getElementById('nWork').textContent = (sessions.length + roots.length) || '';
+  document.getElementById('nNet').textContent = Object.keys(forwards).length || '';
+  document.getElementById('nSys').textContent = sys.load_1m != null ? sys.load_1m : '';
+  applySearch();
+}
+
+function toggleAgentRoot(el) {
+  const children = el.nextElementSibling;
+  if (children) children.style.display = children.style.display === 'none' ? '' : 'none';
+}
+function showToast(icon, title, detail, cls) {
+  const container = document.getElementById('toastContainer');
+  if (!container) return;
+  const toast = document.createElement('div');
+  toast.className = `toast ${cls||''}`;
+  toast.innerHTML = `<strong>${esc(icon)} ${esc(title)}</strong><div class="meta">${esc(detail||'')}</div>`;
+  container.appendChild(toast);
+  setTimeout(() => toast.remove(), 5000);
+}
+
+const LOAD_HISTORY = [];
+const MAX_LOAD_POINTS = 60;
+function updateSparkline(sys, canvasId) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas || !sys || sys.load_1m == null) return;
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width, h = canvas.height;
+  LOAD_HISTORY.push(sys.load_1m);
+  if (LOAD_HISTORY.length > MAX_LOAD_POINTS) LOAD_HISTORY.shift();
+  const maxLoad = Math.max(...LOAD_HISTORY, 1);
+  ctx.clearRect(0, 0, w, h);
+  ctx.beginPath();
+  ctx.strokeStyle = '#e8a317';
+  ctx.lineWidth = 1.6;
+  const stepX = w / (LOAD_HISTORY.length - 1 || 1);
+  LOAD_HISTORY.forEach((val, i) => {
+    const x = i * stepX, y = h - (val / maxLoad) * (h - 4) - 2;
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+}
+const _origRender = render;
+render = function(data) {
+  _origRender(data);
+  if (data.system) updateSparkline(data.system, 'loadSparkline');
+};
+if ('serviceWorker' in navigator) { navigator.serviceWorker.register('/sw.js').catch(() => {}); }
+connect();
+</script>
+</body>
+</html>
